@@ -6,10 +6,11 @@ import {
   layoutStyle,
   siderStyle,
   siderStyleContent,
-} from "../../shared/styles/AntdStyles/LayoutWithToside";
+} from "~/shared/styles/AntdStyles/LayoutWithToside";
 import SideBar from "../components/SideBar";
 import HeaderComponent from "../components/Header";
-import styles from "../../shared/styles/scss/LayoutWithToSide.module.scss";
+import styles from "~/shared/styles/scss/LayoutWithToSide.module.scss";
+import FilterTicketCheck from "~/view/page/TicketCheck/FilterTicketCheck";
 interface DefaultLayoutProps {
   children: any;
 }
@@ -40,7 +41,7 @@ function LayoutWithTwoSide({ children }: DefaultLayoutProps) {
             {children}
           </Content>
           <Sider style={siderStyleContent} className={styles.siderReset}>
-            Sider
+            <FilterTicketCheck></FilterTicketCheck>
           </Sider>
         </div>
       </Layout>

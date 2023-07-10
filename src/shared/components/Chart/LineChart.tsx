@@ -1,30 +1,27 @@
 import { useEffect, useState } from "react";
-import {
-  ChartDataset,
-  Chart as Chartjs,
-  LineElement,
-  Filler,
-} from "chart.js/auto";
 import { Line } from "react-chartjs-2";
-
-Chartjs.register(LineElement, Filler);
 
 interface DataMonth {
   day: string;
   amount: string;
 }
 
-interface dataSets extends ChartDataset<"line", string[]> {
+interface DataSets {
+  label: string;
   data: string[];
   tension: number;
+  borderColor: string;
   pointBorderColor: string;
-  backgroundColor: string | CanvasGradient | CanvasPattern;
+  backgroundColor: CanvasGradient;
+  fill: boolean;
+  spanGaps: boolean;
 }
 
-interface typeChart<T> {
+interface ChartData {
   labels: string[];
-  datasets: T[];
+  datasets: DataSets[];
 }
+
 const dataList: DataMonth[] = [
   { day: "Thứ 2", amount: "140.0" },
   { day: "Thứ 3", amount: "186.0" },
@@ -34,44 +31,58 @@ const dataList: DataMonth[] = [
   { day: "Thứ 7", amount: "170.0" },
   { day: "CN", amount: "260.0" },
 ];
-const chartData = {
-  labels: [],
-  datasets: [
-    {
-      label: "",
-      data: [],
-      tension: 0.5, // Thiết lập giá trị tension cho đường cong
-      borderColor: "",
-      pointBorderColor: "",
-      backgroundColor: "",
-      fill: true,
-    },
-  ],
-};
+
 function LineChartComponent() {
-  const [chartDemo, setChart] = useState<typeChart<dataSets>>(chartData);
+  const [chartData, setChartData] = useState<ChartData>({
+    labels: [],
+    datasets: [
+      {
+        label: "",
+        data: [],
+        tension: 0.5,
+        borderColor: "",
+        pointBorderColor: "",
+        backgroundColor: {} as CanvasGradient,
+        fill: true,
+        spanGaps: true,
+      },
+    ],
+  });
+
   useEffect(() => {
-    setChart({
+    setChartData({
       labels: dataList.map((month) => month.day),
       datasets: [
         {
-          data: dataList.map((amount) => amount.amount),
+          label: "",
+          data: dataList.map((month) => month.amount),
           tension: 0.5,
           borderColor: "#FF993C",
           pointBorderColor: "transparent",
-          backgroundColor: "yellow",
+          backgroundColor: createLinearGradient(),
           fill: true,
+          spanGaps: true,
         },
       ],
     });
   }, []);
-  console.log(chartDemo);
+
+  const createLinearGradient = () => {
+    const ctx = document.createElement("canvas").getContext("2d");
+    if (ctx) {
+      const gradient = ctx.createLinearGradient(0, 0, 0, 190);
+      gradient.addColorStop(0, "#FAA05F");
+      gradient.addColorStop(1, "#FFFFFF");
+      return gradient;
+    }
+    return {} as CanvasGradient;
+  };
 
   const options = {
     scales: {
       y: {
         ticks: {
-          stepSize: 40, // Rút gọn các giá trị trên trục dọc
+          stepSize: 40,
         },
       },
       x: {
@@ -83,9 +94,14 @@ function LineChartComponent() {
         },
       },
     },
+    plugins: {
+      legend: {
+        display: false, // Tắt hiển thị ô vuông màu của nhãn
+      },
+    },
   };
 
-  return <Line width={400} data={chartDemo} height={80} options={options} />;
+  return <Line width={400} data={chartData} height={80} options={options} />;
 }
 
 export default LineChartComponent;
