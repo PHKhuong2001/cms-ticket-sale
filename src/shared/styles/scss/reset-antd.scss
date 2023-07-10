@@ -1,0 +1,56 @@
+.layout-default {
+  background: #f9f6f4;
+}
+.searchInput {
+  .ant-input-group {
+    border-radius: 6px;
+    input {
+      border: none !important;
+      height: 40px;
+      background-color: transparent;
+      &:focus {
+        border-color: transparent !important;
+        outline: none;
+        box-shadow: none;
+      }
+    }
+  }
+  .ant-input-group-addon {
+    inset-inline-start: -1px;
+    button {
+      width: 40px;
+      height: 40px;
+      outline: none;
+      border: none;
+      box-shadow: none;
+      background-color: #ededed;
+      color: #1e0d03;
+    }
+  }
+}
+:where(.css-dev-only-do-not-override-14wwjjs).ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th:not(:last-child):not(.ant-table-selection-column):not(
+    .ant-table-row-expand-icon-cell
+  ):not([colspan])::before {
+  width: 0;
+}
+:where(.css-dev-only-do-not-override-14wwjjs).ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th,
+:where(.css-dev-only-do-not-override-14wwjjs).ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td {
+  padding: 12px 12px;
+}
+
+.odd-row {
+  background-color: #f7f8fb;
+}
+
+.buttonReset {
+  border: none;
+}
