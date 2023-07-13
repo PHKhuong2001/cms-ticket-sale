@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 
 interface DataMonth {
-  day: string;
+  dateUse: string;
+  dateRelease: string;
   amount: string;
 }
 
@@ -23,13 +24,15 @@ interface ChartData {
 }
 
 const dataList: DataMonth[] = [
-  { day: "Thứ 2", amount: "140.0" },
-  { day: "Thứ 3", amount: "186.0" },
-  { day: "Thứ 4", amount: "190.0" },
-  { day: "Thứ 5", amount: "178.0" },
-  { day: "Thứ 6", amount: "150.0" },
-  { day: "Thứ 7", amount: "170.0" },
-  { day: "CN", amount: "260.0" },
+  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "140.0" },
+  { dateUse: "13/07/2023", dateRelease: "12/07/2023", amount: "260.0" },
+  { dateUse: "13/07/2023", dateRelease: "12/07/2023", amount: "186.0" },
+  { dateUse: "13/07/2023", dateRelease: "12/07/2023", amount: "260.0" },
+  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "190.0" },
+  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "178.0" },
+  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "150.0" },
+  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "170.0" },
+  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "260.0" },
 ];
 
 function LineChartComponent() {
@@ -51,7 +54,7 @@ function LineChartComponent() {
 
   useEffect(() => {
     setChartData({
-      labels: dataList.map((month) => month.day),
+      labels: dataList.map((month) => month.dateUse),
       datasets: [
         {
           label: "",

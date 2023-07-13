@@ -18,7 +18,7 @@ function TicketPackage() {
         </Row>
         <Row>
           <Col span={24}>
-            <TableComponent ticketCheck />
+            {/* <TableComponent ticketType="ticketCheck" data={dataCheck} /> */}
           </Col>
         </Row>
       </Col>

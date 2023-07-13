@@ -11,19 +11,43 @@ function Tool({ ticketManage, ticketCheck, ticketPackage }: ToolType) {
   const onSearch = (value: string) => console.log(value);
   const renderTool = () => {
     if (ticketCheck) {
-      return <Button>Chốt đối soát</Button>;
+      return <Button className="buttonReset">Chốt đối soát</Button>;
     } else if (ticketPackage) {
       return (
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-          <button>xuất file(.csv)</button>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 10,
+            height: "100%",
+          }}
+        >
+          <Button
+            style={{ borderColor: "#FF993C" }}
+            className="buttonFilterReset"
+          >
+            xuất file(.csv)
+          </Button>
           <TicketPackageModal></TicketPackageModal>
         </div>
       );
     }
     return (
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 10,
+          height: "100%",
+        }}
+      >
         <TicketManageModal></TicketManageModal>
-        <button>xuất file(.csv)</button>
+        <Button
+          style={{ borderColor: "#FF993C" }}
+          className="buttonFilterReset"
+        >
+          xuất file(.csv)
+        </Button>
       </div>
     );
   };

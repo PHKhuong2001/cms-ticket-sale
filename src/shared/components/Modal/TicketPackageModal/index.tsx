@@ -45,8 +45,8 @@ function TicketPackageModal() {
 
   return (
     <div>
-      <Button icon={<FilterIcon width="13" height="13" />} onClick={showModal}>
-        Lọc vé
+      <Button onClick={showModal} className="buttonReset">
+        Thêm gói vé
       </Button>
       <Modal
         title={

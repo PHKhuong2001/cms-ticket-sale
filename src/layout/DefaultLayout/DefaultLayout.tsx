@@ -17,7 +17,17 @@ function DefaultLayout({ children }: DefaultLayoutProps) {
   return (
     <Layout className="layout-default" style={layoutStyle}>
       <Sider style={siderStyle} className="layout-default-sidebar">
-        <SideBar></SideBar>
+        <div
+          style={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <SideBar></SideBar>
+          <h1 style={{ margin: 0 }}>Alta Media</h1>
+        </div>
       </Sider>
       <Layout style={{ background: "transparent" }}>
         <Header style={headerStyle}>

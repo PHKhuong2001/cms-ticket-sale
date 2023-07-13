@@ -44,7 +44,7 @@ function Home() {
             </Title>
           </Col>
         </Row>
-        <Row>
+        <Row style={{ textAlign: "center" }}>
           <Col span={6} style={{ padding: 15 }}>
             <DatePicker
               suffixIcon={<CalendarOutlined />}
@@ -52,37 +52,43 @@ function Home() {
               format="YYYY-MM-DD"
             />
           </Col>
-          <Col span={6}>
-            <div
-              style={{ width: "200px", height: "200px", textAlign: "center" }}
+          <Col
+            span={6}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Title
+              style={{
+                fontSize: 15,
+                margin: 0,
+                marginBottom: 2,
+              }}
             >
-              <Title
-                style={{
-                  fontSize: 15,
-                  margin: 0,
-                  marginBottom: 2,
-                }}
-              >
-                Gói gia đình
-              </Title>
-              <PieChartComponent></PieChartComponent>
-            </div>
+              Gói gia đình
+            </Title>
+            <PieChartComponent></PieChartComponent>
           </Col>
-          <Col span={6}>
-            <div
-              style={{ width: "200px", height: "200px", textAlign: "center" }}
+          <Col
+            span={6}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Title
+              style={{
+                fontSize: 15,
+                margin: 0,
+                marginBottom: 2,
+              }}
             >
-              <Title
-                style={{
-                  fontSize: 15,
-                  margin: 0,
-                  marginBottom: 2,
-                }}
-              >
-                Gói sự kiện
-              </Title>
-              <PieChartComponent></PieChartComponent>
-            </div>
+              Gói sự kiện
+            </Title>
+            <PieChartComponent></PieChartComponent>
           </Col>
           <Col span={6}>
             <Title style={HomeStyles.titleHead}>Thống Kê</Title>

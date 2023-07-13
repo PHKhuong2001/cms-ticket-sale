@@ -1,13 +1,13 @@
 export const layoutStyle = {
   height: "100vh",
   background: "#F9F6F4",
-  padding: "8px 17px 17px 33px",
+  padding: "8px 17px 17px 17px",
   overflow: "hidden",
 };
 export const siderStyle = {
   background: "transparent",
   height: "100%",
-  marginRight: "33px",
+  marginRight: "17px",
 };
 export const siderStyleContent = {
   background: "#fff",

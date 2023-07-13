@@ -2,9 +2,9 @@ import { Col, Row, Image, Typography } from "antd";
 import { ComponentState } from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
-import images from "../../../shared/assets/images";
-import routesConfig from "../../../config/routes";
-import SideBarCssStyle from "../../../shared/styles/AntdStyles/SideBarStyles";
+import images from "~/shared/assets/images";
+import routesConfig from "~/config/routes";
+import SideBarCssStyle from "~/shared/styles/AntdStyles/SideBarStyles";
 import listSideBar from "./SideBarList";
 
 export interface SideBarList {
@@ -12,6 +12,7 @@ export interface SideBarList {
   iconClick: ComponentState;
   name: string;
   path: string;
+  filterPath?: boolean;
   setting?: SideBarSetting[];
 }
 
@@ -31,7 +32,9 @@ const SideBar: React.FunctionComponent = () => {
     linkSettingButtonClick,
   } = SideBarCssStyle;
   const location = useLocation();
-  const currentPath = location.pathname;
+  const currentPath = location.pathname.replace(/\/$/, "");
+  console.log(currentPath);
+
   const settinghandlerPath = () => {
     if (currentPath === routesConfig.ticketPackage) {
       return true;
@@ -41,7 +44,7 @@ const SideBar: React.FunctionComponent = () => {
   return (
     <>
       <Col>
-        <Row style={{ marginBottom: "45px" }}>
+        <Row style={{ marginBottom: "28px" }}>
           <Col>
             <Image src={images.logo} width={110} height={58} />
           </Col>

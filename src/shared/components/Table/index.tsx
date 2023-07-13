@@ -1,27 +1,25 @@
 import { Table, Pagination } from "antd";
 import { useEffect, useState } from "react";
+import { DataCheck, DataManageMent } from "~/shared/interfaces";
 import {
-  columnsOffCheck,
-  columnsOffManage,
-  dataCheck,
-  dataManage,
-} from "./DataTable";
+  columnsOffCheckFamily,
+  columnsOffCheckEvent,
+} from "~/view/page/TicketCheck/DataCheck";
+import {
+  columnsOffManageEvent,
+  columnsOffManageFamily,
+} from "~/view/page/TicketManagement/DataManagement";
 
 const pageSizeOptions = ["5", "6", "7", "8", "10", "20"]; // Các tùy chọn số lượng hàng trên mỗi trang
-
 interface TableProps {
-  ticketManage?: boolean;
-  ticketCheck?: boolean;
-  ticketPackage?: boolean;
+  ticketType?: string;
+  data: DataManageMent[] | DataCheck[];
+  packageName?: string;
 }
 
-const TableComponent = ({
-  ticketCheck,
-  ticketManage,
-  ticketPackage,
-}: TableProps) => {
-  const [pageSize, setPageSize] = useState(() => {
-    return ticketCheck
+const TableComponent = ({ ticketType, data, packageName }: TableProps) => {
+  const [pageSize, setPageSize] = useState<any>(() => {
+    return ticketType === "ticketCheck"
       ? parseInt(pageSizeOptions[1], 10)
       : parseInt(pageSizeOptions[1], 10);
   });
@@ -32,14 +30,9 @@ const TableComponent = ({
   useEffect(() => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    if (ticketCheck) {
-      setCurrentData(dataCheck.slice(startIndex, endIndex));
-      setTotalData(dataCheck.length);
-    } else if (ticketManage) {
-      setCurrentData(dataManage.slice(startIndex, endIndex));
-      setTotalData(dataManage.length);
-    }
-  }, [currentPage, pageSize, ticketCheck, ticketManage]);
+    setCurrentData(data.slice(startIndex, endIndex));
+    setTotalData(data.length);
+  }, [currentPage, pageSize, ticketType, data]);
 
   const handlePaginationChange = (page: number, pageSize: number) => {
     setCurrentPage(page);
@@ -50,13 +43,24 @@ const TableComponent = ({
     return index % 2 === 0 ? "even-row" : "odd-row";
   };
 
-  const columns = ticketCheck ? columnsOffCheck : columnsOffManage;
+  const columns = () => {
+    switch (ticketType) {
+      case "ticketCheck":
+        return packageName === "event"
+          ? columnsOffCheckEvent
+          : columnsOffCheckFamily;
+      case "ticketManage":
+        return packageName === "event"
+          ? columnsOffManageEvent
+          : columnsOffManageFamily;
+    }
+  };
 
   return (
     <>
       <Table
         dataSource={currentData}
-        columns={columns}
+        columns={columns()}
         pagination={false}
         rowClassName={rowClassName}
         style={{ height: "350px" }}

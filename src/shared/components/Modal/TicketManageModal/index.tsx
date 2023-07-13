@@ -3,14 +3,22 @@ import {
   Checkbox,
   Col,
   DatePicker,
+  Form,
   Modal,
   Radio,
   Row,
   Typography,
 } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FilterIcon } from "../../Icons";
 import { CalendarOutlined } from "@ant-design/icons";
+import { useAppDispatch } from "~/app/hooks";
+import { filterPackage } from "~/features/ticket/ticketSlice";
+import { useLocation } from "react-router-dom";
+import queryString from "query-string";
+import { handlerPackages } from "~/shared/helpers";
+import { tickets } from "~/view/page/TicketManagement";
+import moment from "moment";
 
 const radioList = [
   { name: "Tất cả" },
@@ -27,10 +35,30 @@ const checkboxList = [
   { name: "Cổng 4" },
   { name: "Cổng 5" },
 ];
+
+const formSubmit = {
+  packageName: "",
+  startDate: "",
+  endDate: "",
+  status: [],
+  gates: [],
+};
 function TicketManageModal() {
   const { Title } = Typography;
+  const dispatch = useAppDispatch();
+  const location = useLocation();
   const [visible, setVisible] = useState(false);
+  const [checkedBox, setCheckedBox] = useState<string[]>([]);
+  const [statusValue, setStatusValue] = useState<string[]>([]);
 
+  const [formValue, setFormValue] = useState(formSubmit);
+  const [initialString, setInitialString] = useState("");
+
+  useEffect(() => {
+    const params = queryString.parse(location.search);
+    const packageTicket = params.package;
+    setInitialString(packageTicket?.toString() || "");
+  }, [location.search]);
   const showModal = () => {
     setVisible(true);
   };
@@ -43,9 +71,74 @@ function TicketManageModal() {
     setVisible(false);
   };
 
+  console.log(statusValue);
+
+  const handlerCheckRadio = (value: string) => {
+    const isRadioChecked = statusValue.includes(value);
+    setStatusValue((prev) => {
+      if (isRadioChecked) {
+        return statusValue.filter((item) => item !== value);
+      } else {
+        return [...prev, value];
+      }
+    });
+  };
+
+  const handlerCheckBox = (value: string) => {
+    const isCheckboxChecked = checkedBox.includes(value);
+    let checkboxList = [];
+    setCheckedBox((prev) => {
+      if (isCheckboxChecked) {
+        checkboxList = checkedBox.filter((item) => item !== value);
+      } else {
+        checkboxList = [...prev, value];
+      }
+      return checkboxList.includes("Tất cả") ? [value] : checkboxList;
+    });
+  };
+  console.log(formValue);
+
+  const handleStartDateChange = (date: any, dateString: any) => {
+    setFormValue((prev) => ({
+      ...prev,
+      startDate: dateString,
+    }));
+  };
+
+  const handleEndDateChange = (date: any, dateString: any) => {
+    setFormValue((prev) => ({
+      ...prev,
+      endDate: dateString,
+    }));
+  };
+
+  const handlerSubmitFilter = () => {
+    dispatch(
+      filterPackage({
+        ...formValue,
+        packageName: handlerPackages(initialString, tickets) || "Gói gia đình",
+        gates: checkedBox.includes("Tất cả") ? [] : checkedBox,
+        status: statusValue,
+      })
+    )
+      .then((e) => {
+        console.log(e);
+      })
+      .catch((e) => {
+        console.log("error: ", e);
+      });
+
+    return false;
+  };
+
   return (
     <div>
-      <Button icon={<FilterIcon width="13" height="13" />} onClick={showModal}>
+      <Button
+        icon={<FilterIcon width="13" height="13" />}
+        style={{ borderColor: "#FF993C" }}
+        onClick={showModal}
+        className="buttonFilterReset"
+      >
         Lọc vé
       </Button>
       <Modal
@@ -63,83 +156,100 @@ function TicketManageModal() {
         width={530}
         footer={false}
       >
-        {/* Nội dung của Modal */}
-        <Col>
-          <Row style={{ marginBottom: 15 }}>
-            <Col span={12}>
-              <Title
-                style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 400 }}
-              >
-                Từ ngày
-              </Title>
-              <DatePicker
-                suffixIcon={<CalendarOutlined />}
-                showToday={false}
-                format="DD/MM/YYYY"
-              />
-            </Col>
-            <Col span={12}>
-              <Title
-                style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 500 }}
-              >
-                Đến ngày
-              </Title>
-              <DatePicker
-                suffixIcon={<CalendarOutlined />}
-                showToday={false}
-                format="DD/MM/YYYY"
-              />
-            </Col>
-          </Row>
+        <Form onFinish={handlerSubmitFilter}>
+          {/* Nội dung của Modal */}
+          <Col>
+            <Row style={{ marginBottom: 15 }}>
+              <Col span={12}>
+                <Title
+                  style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 400 }}
+                >
+                  Từ ngày
+                </Title>
+                <DatePicker
+                  suffixIcon={<CalendarOutlined />}
+                  showToday={false}
+                  format="DD/MM/YYYY"
+                  onChange={handleStartDateChange}
+                />
+              </Col>
+              <Col span={12}>
+                <Title
+                  style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 500 }}
+                >
+                  Đến ngày
+                </Title>
+                <DatePicker
+                  suffixIcon={<CalendarOutlined />}
+                  showToday={false}
+                  format="DD/MM/YYYY"
+                  onChange={handleEndDateChange}
+                />
+              </Col>
+            </Row>
 
-          {/* Lọc theo tình trạng */}
-          <Row style={{ marginBottom: 15 }}>
-            <Col span={24}>
-              <Title
-                style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 500 }}
-              >
-                Tình trạng sử dụng
-              </Title>
-            </Col>
-            {radioList.map((radio, index) => {
-              return (
-                <Col span={6} key={index}>
-                  <Radio value={radio.name} style={{ fontSize: 13 }}>
-                    {radio.name}
-                  </Radio>
-                </Col>
-              );
-            })}
-          </Row>
+            {/* Lọc theo tình trạng */}
+            <Row style={{ marginBottom: 15 }}>
+              <Col span={24}>
+                <Title
+                  style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 500 }}
+                >
+                  Tình trạng sử dụng
+                </Title>
+              </Col>
+              {radioList.map((radio, index) => {
+                return (
+                  <Col span={6} key={index}>
+                    <Radio
+                      style={{ fontSize: 13 }}
+                      checked={statusValue.includes(radio.name)}
+                      onClick={() => handlerCheckRadio(radio.name)}
+                    >
+                      {radio.name}
+                    </Radio>
+                  </Col>
+                );
+              })}
+            </Row>
 
-          {/* Lọc theo cổng */}
-          <Row style={{ marginBottom: 15 }}>
-            <Col span={24}>
-              <Title
-                style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 500 }}
-              >
-                Cổng Check - in
-              </Title>
-            </Col>
-            {checkboxList.map((checkbox, index) => {
-              return (
-                <Col span={8} key={index}>
-                  <Checkbox
-                    value={checkbox.name}
-                    style={{ lineHeight: "32px" }}
-                  >
-                    {checkbox.name}
-                  </Checkbox>
-                </Col>
-              );
-            })}
-          </Row>
-          <Row>
-            <Col span={24} style={{ textAlign: "center" }}>
-              <Button onClick={() => setVisible(false)}>Lọc</Button>
-            </Col>
-          </Row>
-        </Col>
+            {/* Lọc theo cổng */}
+            <Row style={{ marginBottom: 15 }}>
+              <Col span={24}>
+                <Title
+                  style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 500 }}
+                >
+                  Cổng Check - in
+                </Title>
+              </Col>
+              {checkboxList.map((checkbox, index) => {
+                return (
+                  <Col span={8} key={index}>
+                    <Checkbox
+                      style={{ lineHeight: "32px" }}
+                      checked={checkedBox.includes(checkbox.name)}
+                      onClick={() => handlerCheckBox(checkbox.name)}
+                    >
+                      {checkbox.name}
+                    </Checkbox>
+                  </Col>
+                );
+              })}
+            </Row>
+            <Row>
+              <Col span={24} style={{ textAlign: "center" }}>
+                <Button
+                  onClick={() => {
+                    setVisible(false);
+                  }}
+                  htmlType="submit"
+                  className="buttonFilterReset"
+                >
+                  Lọc
+                </Button>
+              </Col>
+            </Row>
+          </Col>
+        </Form>
       </Modal>
     </div>
   );

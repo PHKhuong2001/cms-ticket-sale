@@ -34,9 +34,8 @@ function PieChartComponent() {
       ],
     });
   }, []);
-  console.log(chartDemo);
 
-  return <Pie data={chartDemo} width={100} height={100} />;
+  return <Pie data={chartDemo} width={100} height={100} className="pieChart" />;
 }
 
 export default PieChartComponent;

@@ -3,8 +3,8 @@ import {
   TicketManagementIcon,
   TicketCheckIcon,
   TicketSettingIcon,
-} from "../../../shared/components/Icons";
-import routesConfig from "../../../config/routes";
+} from "~/shared/components/Icons";
+import routesConfig from "~/config/routes";
 import { SideBarList } from "./index";
 
 const listSideBar: SideBarList[] = [
@@ -28,6 +28,7 @@ const listSideBar: SideBarList[] = [
     ),
     name: "Quản lý vé",
     path: routesConfig.ticketManagement,
+    filterPath: true,
   },
   {
     icon: <TicketCheckIcon width="24" height="24" />,
