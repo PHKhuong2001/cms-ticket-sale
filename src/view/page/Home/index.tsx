@@ -44,8 +44,8 @@ function Home() {
             </Title>
           </Col>
         </Row>
-        <Row style={{ textAlign: "center" }}>
-          <Col span={6} style={{ padding: 15 }}>
+        <Row>
+          <Col span={6} style={{ padding: 15, textAlign: "center" }}>
             <DatePicker
               suffixIcon={<CalendarOutlined />}
               showToday={false}
@@ -90,8 +90,17 @@ function Home() {
             </Title>
             <PieChartComponent></PieChartComponent>
           </Col>
-          <Col span={6}>
-            <Title style={HomeStyles.titleHead}>Thống Kê</Title>
+          <Col span={6} style={{ marginTop: "40px" }}>
+            <div className="wrapper-use">
+              <Title style={{ margin: "0", fontSize: "0.8rem" }}>
+                Vé đã sử dụng
+              </Title>
+            </div>
+            <div className="wrapper-unuse">
+              <Title style={{ margin: "0", fontSize: "0.8rem" }}>
+                Vé chưa sử dụng
+              </Title>
+            </div>
           </Col>
         </Row>
       </Col>

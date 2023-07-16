@@ -1,15 +1,121 @@
-import { Button, Col, DatePicker, Radio, Row, Typography } from "antd";
+import {
+  Button,
+  Col,
+  DatePicker,
+  Form,
+  Radio,
+  Row,
+  Typography,
+  Select,
+} from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAppDispatch } from "~/app/hooks";
+import { handlerPackages } from "~/shared/helpers";
+import { filterPackageCheck } from "~/features/ticket/ticketSlice";
+import { tickets } from "../../TicketManagement";
+import { useLocation, useNavigate } from "react-router-dom";
+import usePathUrlParamsCheck from "~/shared/hooks/usePathUrlParamsCheck";
+import { handlerRemovePath, usePathUrl } from "~/config";
+import routesConfig from "~/config/routes";
 
 export const radioList = [
   { name: "Tất cả" },
   { name: "Đã đối soát" },
   { name: "Chưa đối soát" },
 ];
+
+const formSubmit = {
+  packageName: "",
+  startDate: "",
+  endDate: "",
+  statusCheck: [],
+  gates: [],
+};
 function FilterTicketCheck() {
+  const { Option } = Select;
   const { Title } = Typography;
-  const [checkedRadio, setCheckedRadio] = useState<string[]>([]);
+  const dispatch = useAppDispatch();
+  const pathUrl = usePathUrl();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [formValue, setFormValue] = useState(formSubmit);
+  const formFilter = usePathUrlParamsCheck();
+  const [checkedRadio, setCheckedRadio] = useState<string[]>(
+    formFilter.statusCheck || []
+  );
+  const [initialString, setInitialString] = useState("");
+  useEffect(() => {
+    setInitialString(pathUrl?.toString() || "");
+  }, [pathUrl]);
+  console.log(formFilter);
+
+  useEffect(() => {
+    if (
+      handlerRemovePath(location.pathname) ===
+      handlerRemovePath(routesConfig.ticketCheck)
+    ) {
+      dispatch(filterPackageCheck({ ...formFilter })).then((e) => {
+        console.log(e);
+      });
+    }
+  }, [dispatch, formFilter, location.pathname]);
+
+  const handlerCheckBox = (value: string) => {
+    const isCheckboxChecked = checkedRadio.includes(value);
+    let checkboxList = [];
+    setCheckedRadio((prev) => {
+      if (isCheckboxChecked) {
+        checkboxList = checkedRadio.filter((item) => item !== value);
+      } else {
+        checkboxList = [...prev, value];
+      }
+      return checkboxList.includes("Tất cả") ? [value] : checkboxList;
+    });
+  };
+
+  const handleStartDateChange = (date: any, dateString: any) => {
+    setFormValue((prev) => ({
+      ...prev,
+      startDate: dateString,
+    }));
+  };
+
+  const handleEndDateChange = (date: any, dateString: any) => {
+    setFormValue((prev) => ({
+      ...prev,
+      endDate: dateString,
+    }));
+  };
+
+  const handlerSubmitCheckForm = () => {
+    const queryParams = new URLSearchParams();
+    const { startDate, endDate, gates } = formValue;
+
+    // Thêm các query parameters vào URLSearchParams
+    queryParams.set(
+      "packageName",
+      handlerPackages(initialString, tickets) || "Gói gia đình"
+    );
+    if (startDate) {
+      queryParams.set("startDate", startDate);
+    }
+    if (endDate) {
+      queryParams.set("endDate", endDate);
+    }
+    if (checkedRadio && checkedRadio.length > 0) {
+      queryParams.set("statusCheck", checkedRadio.join(","));
+    }
+    if (gates && gates.length > 0) {
+      queryParams.set("gates", gates.join(","));
+    }
+
+    const newPathURL = `/ticket-check/${pathUrl}/?${queryParams.toString()}`;
+    navigate(newPathURL);
+
+    return false;
+  };
+
   return (
     <Col>
       <Row style={{ marginBottom: "24px" }}>
@@ -19,80 +125,103 @@ function FilterTicketCheck() {
           </Title>
         </Col>
       </Row>
-      <Row style={{ marginBottom: "20px" }}>
-        <Col span={12}>
-          <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "500" }}>
-            Tình trạng đối soát
-          </Title>
-        </Col>
-        <Col
-          span={12}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            paddingLeft: "2px",
-          }}
-        >
-          {radioList.map((radio, index) => {
-            return (
-              <Radio
-                style={{ fontSize: 13, marginBottom: "4px" }}
-                className="radioResetPadding"
-                key={index}
-              >
-                {radio.name}
-              </Radio>
-            );
-          })}
-        </Col>
-      </Row>
-      <Row style={{ marginBottom: "20px" }}>
-        <Col span={12}>
-          <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "500" }}>
-            Loại vé
-          </Title>
-        </Col>
-        <Col span={12}>
-          <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "400" }}>
-            Vé cổng
-          </Title>
-        </Col>
-      </Row>
-      <Row style={{ marginBottom: "20px" }}>
-        <Col span={12} style={{ margin: "auto 0 auto 0" }}>
-          <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "500" }}>
-            Từ ngày
-          </Title>
-        </Col>
-        <Col span={12}>
-          <DatePicker
-            suffixIcon={<CalendarOutlined />}
-            showToday={false}
-            format="DD/MM/YYYY"
-          />
-        </Col>
-      </Row>
-      <Row style={{ marginBottom: "20px" }}>
-        <Col span={12} style={{ margin: "auto 0 auto 0" }}>
-          <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "500" }}>
-            Đến ngày
-          </Title>
-        </Col>
-        <Col span={12}>
-          <DatePicker
-            suffixIcon={<CalendarOutlined />}
-            showToday={false}
-            format="DD/MM/YYYY"
-          />
-        </Col>
-      </Row>
-      <Row style={{ marginBottom: "20px", textAlign: "center" }}>
-        <Col span={24}>
-          <Button className="buttonFilterReset" style={{ width: "100px" }}>
-            Lọc
-          </Button>
-        </Col>
-      </Row>
+      <Form onFinish={handlerSubmitCheckForm}>
+        {initialString === "event" ? (
+          <Row style={{ marginBottom: "24px", marginTop: "20px" }}>
+            <Col span={24}>
+              <Select style={{ width: "100%" }}>
+                <Option value="option1">Option 1</Option>
+                <Option value="option2">Option 2</Option>
+                <Option value="option3">Option 3</Option>
+              </Select>
+            </Col>
+          </Row>
+        ) : (
+          <></>
+        )}
+        <Row style={{ marginBottom: "20px" }}>
+          <Col span={12}>
+            <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "500" }}>
+              Tình trạng đối soát
+            </Title>
+          </Col>
+          <Col
+            span={12}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              paddingLeft: "2px",
+            }}
+          >
+            {radioList.map((radio, index) => {
+              return (
+                <Radio
+                  style={{ fontSize: 13, marginBottom: "4px" }}
+                  className="radioResetPadding"
+                  checked={checkedRadio.includes(radio.name)}
+                  key={index}
+                  onClick={() => handlerCheckBox(radio.name)}
+                >
+                  {radio.name}
+                </Radio>
+              );
+            })}
+          </Col>
+        </Row>
+        <Row style={{ marginBottom: "20px" }}>
+          <Col span={12}>
+            <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "500" }}>
+              Loại vé
+            </Title>
+          </Col>
+          <Col span={12}>
+            <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "400" }}>
+              Vé cổng
+            </Title>
+          </Col>
+        </Row>
+        <Row style={{ marginBottom: "20px" }}>
+          <Col span={12} style={{ margin: "auto 0 auto 0" }}>
+            <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "500" }}>
+              Từ ngày
+            </Title>
+          </Col>
+          <Col span={12}>
+            <DatePicker
+              suffixIcon={<CalendarOutlined />}
+              showToday={false}
+              format="DD/MM/YYYY"
+              onChange={handleStartDateChange}
+            />
+          </Col>
+        </Row>
+        <Row style={{ marginBottom: "20px" }}>
+          <Col span={12} style={{ margin: "auto 0 auto 0" }}>
+            <Title style={{ margin: 0, fontSize: "0.9em", fontWeight: "500" }}>
+              Đến ngày
+            </Title>
+          </Col>
+          <Col span={12}>
+            <DatePicker
+              suffixIcon={<CalendarOutlined />}
+              showToday={false}
+              format="DD/MM/YYYY"
+              onChange={handleEndDateChange}
+            />
+          </Col>
+        </Row>
+        <Row style={{ marginBottom: "20px", textAlign: "center" }}>
+          <Col span={24}>
+            <Button
+              className="buttonFilterReset"
+              htmlType="submit"
+              style={{ width: "100px" }}
+            >
+              Lọc
+            </Button>
+          </Col>
+        </Row>
+      </Form>
     </Col>
   );
 }

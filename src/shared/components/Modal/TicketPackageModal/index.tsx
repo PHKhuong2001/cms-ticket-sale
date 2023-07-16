@@ -9,7 +9,6 @@ import {
   Typography,
 } from "antd";
 import { useState } from "react";
-import { FilterIcon } from "../../Icons";
 import { CalendarOutlined } from "@ant-design/icons";
 
 const radioList = [

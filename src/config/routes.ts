@@ -5,9 +5,9 @@ interface RoutesConfig {
   ticketPackage: string;
 }
 const routesConfig: RoutesConfig = {
-  home: "/home",
-  ticketManagement: "/ticket-management",
-  ticketCheck: "/ticket-check",
+  home: "/",
+  ticketManagement: "/ticket-management/:packacgeName",
+  ticketCheck: "/ticket-check/:packacgeName",
   ticketPackage: "/ticket-package",
 };
 

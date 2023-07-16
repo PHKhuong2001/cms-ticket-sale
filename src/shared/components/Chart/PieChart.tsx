@@ -28,7 +28,7 @@ function PieChartComponent() {
       datasets: [
         {
           label: "My First Dataset",
-          data: [300, 50, 100],
+          data: [300, 100],
           hoverOffset: 4,
         },
       ],

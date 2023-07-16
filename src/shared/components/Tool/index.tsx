@@ -2,13 +2,19 @@ import { Button, Col } from "antd";
 import InputComponent from "../Input";
 import { TicketManageModal, TicketPackageModal } from "../Modal";
 import { headerStyles } from "~/shared/styles/AntdStyles/HeaderStyles";
+import { useNavigate } from "react-router-dom";
 interface ToolType {
   ticketManage?: boolean;
   ticketCheck?: boolean;
   ticketPackage?: boolean;
 }
 function Tool({ ticketManage, ticketCheck, ticketPackage }: ToolType) {
-  const onSearch = (value: string) => console.log(value);
+  const navigate = useNavigate(); // Sửa đổi ở đây
+
+  const onSearch = (value: string) => {
+    navigate(`/ticket-management/family/?search=${value}`); // Chuyển hướng đến đường dẫn mong muốn
+  };
+
   const renderTool = () => {
     if (ticketCheck) {
       return <Button className="buttonReset">Chốt đối soát</Button>;

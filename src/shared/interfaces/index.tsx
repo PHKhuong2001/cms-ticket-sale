@@ -4,11 +4,11 @@ export interface DataManageMent {
   bookingCode: string;
   soVe: string;
   tenSuKien?: string;
-  trangThai: string;
-  ngaySuDung: any;
-  ngayXuatVe: any;
+  trangThai: any;
+  ngaySuDung: string;
+  ngayXuatVe: string;
   congCheckIn: string;
-  actions: string;
+  actions: any;
 }
 
 export interface DataCheck {
@@ -20,4 +20,12 @@ export interface DataCheck {
   loaiVe: string;
   congCheckIn: string;
   doiSoat: string;
+}
+
+export interface FiltersDataCheckType {
+  packageName: string;
+  startDate?: string;
+  endDate?: string;
+  statusCheck?: string[];
+  gates?: string[];
 }

@@ -14,11 +14,12 @@ import { FilterIcon } from "../../Icons";
 import { CalendarOutlined } from "@ant-design/icons";
 import { useAppDispatch } from "~/app/hooks";
 import { filterPackage } from "~/features/ticket/ticketSlice";
-import { useLocation } from "react-router-dom";
-import queryString from "query-string";
+import { useLocation, useNavigate } from "react-router-dom";
 import { handlerPackages } from "~/shared/helpers";
 import { tickets } from "~/view/page/TicketManagement";
-import moment from "moment";
+import { handlerRemovePath, usePathUrl } from "~/config";
+import usePathUrlParamsManage from "~/shared/hooks/usePathUrlParamsManage";
+import routesConfig from "~/config/routes";
 
 const radioList = [
   { name: "Tất cả" },
@@ -46,19 +47,34 @@ const formSubmit = {
 function TicketManageModal() {
   const { Title } = Typography;
   const dispatch = useAppDispatch();
-  const location = useLocation();
+  const formFilter = usePathUrlParamsManage();
   const [visible, setVisible] = useState(false);
-  const [checkedBox, setCheckedBox] = useState<string[]>([]);
-  const [statusValue, setStatusValue] = useState<string[]>([]);
-
+  const location = useLocation();
+  const [checkedBox, setCheckedBox] = useState<string[]>(
+    formFilter.gates || []
+  );
+  const [checkedRadio, setCheckedRadio] = useState<string[]>(
+    formFilter.status || []
+  );
+  const navigate = useNavigate();
+  const pathUrl = usePathUrl();
   const [formValue, setFormValue] = useState(formSubmit);
   const [initialString, setInitialString] = useState("");
+  console.log(location);
 
   useEffect(() => {
-    const params = queryString.parse(location.search);
-    const packageTicket = params.package;
-    setInitialString(packageTicket?.toString() || "");
-  }, [location.search]);
+    setInitialString(pathUrl?.toString() || "");
+  }, [pathUrl]);
+
+  useEffect(() => {
+    if (
+      handlerRemovePath(location.pathname) ===
+      handlerRemovePath(routesConfig.ticketManagement)
+    ) {
+      dispatch(filterPackage({ ...formFilter }));
+    }
+  }, [dispatch, formFilter, location.pathname]);
+
   const showModal = () => {
     setVisible(true);
   };
@@ -71,16 +87,16 @@ function TicketManageModal() {
     setVisible(false);
   };
 
-  console.log(statusValue);
-
   const handlerCheckRadio = (value: string) => {
-    const isRadioChecked = statusValue.includes(value);
-    setStatusValue((prev) => {
+    const isRadioChecked = checkedRadio.includes(value);
+    let checkRadioList = [];
+    setCheckedRadio((prev) => {
       if (isRadioChecked) {
-        return statusValue.filter((item) => item !== value);
+        checkRadioList = checkedRadio.filter((item) => item !== value);
       } else {
-        return [...prev, value];
+        checkRadioList = [...prev, value];
       }
+      return checkRadioList.includes("Tất cả") ? [value] : checkRadioList;
     });
   };
 
@@ -96,7 +112,6 @@ function TicketManageModal() {
       return checkboxList.includes("Tất cả") ? [value] : checkboxList;
     });
   };
-  console.log(formValue);
 
   const handleStartDateChange = (date: any, dateString: any) => {
     setFormValue((prev) => ({
@@ -113,20 +128,29 @@ function TicketManageModal() {
   };
 
   const handlerSubmitFilter = () => {
-    dispatch(
-      filterPackage({
-        ...formValue,
-        packageName: handlerPackages(initialString, tickets) || "Gói gia đình",
-        gates: checkedBox.includes("Tất cả") ? [] : checkedBox,
-        status: statusValue,
-      })
-    )
-      .then((e) => {
-        console.log(e);
-      })
-      .catch((e) => {
-        console.log("error: ", e);
-      });
+    const queryParams = new URLSearchParams();
+    const { startDate, endDate, gates } = formValue;
+
+    // Thêm các query parameters vào URLSearchParams
+    queryParams.set(
+      "packageName",
+      handlerPackages(initialString, tickets) || "Gói gia đình"
+    );
+    if (startDate) {
+      queryParams.set("startDate", startDate);
+    }
+    if (endDate) {
+      queryParams.set("endDate", endDate);
+    }
+    if (checkedRadio && checkedRadio.length > 0) {
+      queryParams.set("status", checkedRadio.join(","));
+    }
+    if (gates && gates.length > 0) {
+      queryParams.set("gates", gates.join(","));
+    }
+
+    const newPathURL = `/ticket-management/${pathUrl}/?${queryParams.toString()}`;
+    navigate(newPathURL);
 
     return false;
   };
@@ -202,7 +226,7 @@ function TicketManageModal() {
                   <Col span={6} key={index}>
                     <Radio
                       style={{ fontSize: 13 }}
-                      checked={statusValue.includes(radio.name)}
+                      checked={checkedRadio.includes(radio.name)}
                       onClick={() => handlerCheckRadio(radio.name)}
                     >
                       {radio.name}

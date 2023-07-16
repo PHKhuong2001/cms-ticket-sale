@@ -6,6 +6,7 @@ import images from "~/shared/assets/images";
 import routesConfig from "~/config/routes";
 import SideBarCssStyle from "~/shared/styles/AntdStyles/SideBarStyles";
 import listSideBar from "./SideBarList";
+import { handlerChangePackage, handlerRemovePath } from "~/config";
 
 export interface SideBarList {
   icon: ComponentState;
@@ -32,9 +33,7 @@ const SideBar: React.FunctionComponent = () => {
     linkSettingButtonClick,
   } = SideBarCssStyle;
   const location = useLocation();
-  const currentPath = location.pathname.replace(/\/$/, "");
-  console.log(currentPath);
-
+  const currentPath = location.pathname;
   const settinghandlerPath = () => {
     if (currentPath === routesConfig.ticketPackage) {
       return true;
@@ -50,6 +49,8 @@ const SideBar: React.FunctionComponent = () => {
           </Col>
         </Row>
         {listSideBar.map((item, index) => {
+          console.log(handlerRemovePath(currentPath) === item.path);
+
           return (
             <Row style={{}} key={index}>
               <Col span={24}>
@@ -71,15 +72,22 @@ const SideBar: React.FunctionComponent = () => {
                   </button>
                 ) : (
                   <Link
-                    to={item.path}
+                    to={handlerChangePackage(item.path)}
                     style={
-                      currentPath === item.path ? linkButtonClick : linkButton
+                      handlerRemovePath(currentPath) ===
+                      handlerRemovePath(item.path)
+                        ? linkButtonClick
+                        : linkButton
                     }
                   >
-                    {currentPath === item.path ? item.iconClick : item.icon}
+                    {handlerRemovePath(currentPath) ===
+                    handlerRemovePath(item.path)
+                      ? item.iconClick
+                      : item.icon}
                     <Paragraph
                       style={
-                        currentPath === item.path
+                        handlerRemovePath(currentPath) ===
+                        handlerRemovePath(item.path)
                           ? linkTextButtonClick
                           : linkTextButton
                       }
