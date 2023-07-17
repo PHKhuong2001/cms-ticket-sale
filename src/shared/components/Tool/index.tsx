@@ -3,16 +3,21 @@ import InputComponent from "../Input";
 import { TicketManageModal, TicketPackageModal } from "../Modal";
 import { headerStyles } from "~/shared/styles/AntdStyles/HeaderStyles";
 import { useNavigate } from "react-router-dom";
+import { usePathUrl } from "~/config";
 interface ToolType {
   ticketManage?: boolean;
   ticketCheck?: boolean;
   ticketPackage?: boolean;
 }
 function Tool({ ticketManage, ticketCheck, ticketPackage }: ToolType) {
-  const navigate = useNavigate(); // Sửa đổi ở đây
-
+  const navigate = useNavigate();
+  const pathUrl = usePathUrl();
   const onSearch = (value: string) => {
-    navigate(`/ticket-management/family/?search=${value}`); // Chuyển hướng đến đường dẫn mong muốn
+    if (ticketManage) {
+      navigate(`/ticket-management/${pathUrl}/?search=${value}`);
+    } else if (ticketCheck) {
+      navigate(`/ticket-check/${pathUrl}/?search=${value}`);
+    }
   };
 
   const renderTool = () => {

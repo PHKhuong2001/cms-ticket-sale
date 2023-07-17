@@ -10,7 +10,6 @@ function HeaderComponent() {
       <Row>
         <Col span={12}>
           <InputComponent
-            search
             inputProps={{
               onSearch,
               style: headerStyles.inputStyle,

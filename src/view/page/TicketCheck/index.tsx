@@ -27,12 +27,13 @@ function TicketCheck() {
           </Col>
         </Row>
         <Row style={{ marginBottom: "20px" }}>
-          <Col span={24} style={{ display: "flex", gap: "25px" }}>
+          <Col span={24} style={{ display: "flex", gap: "50px" }}>
             {tickets.map((ticket, index) => (
               <Title
-                style={HomeStyles.titlePackage}
+                style={{ ...HomeStyles.titlePackage }}
                 key={index}
                 onClick={() => handlerFilterPackage(ticket.filterTicket)}
+                className={pathUrl === ticket.filterTicket ? `active` : ""}
               >
                 {ticket.name}
               </Title>

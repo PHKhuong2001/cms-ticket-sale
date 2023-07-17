@@ -13,7 +13,10 @@ import { useEffect, useState } from "react";
 import { FilterIcon } from "../../Icons";
 import { CalendarOutlined } from "@ant-design/icons";
 import { useAppDispatch } from "~/app/hooks";
-import { filterPackage } from "~/features/ticket/ticketSlice";
+import {
+  filterPackage,
+  searchPackageManage,
+} from "~/features/ticket/ticketSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { handlerPackages } from "~/shared/helpers";
 import { tickets } from "~/view/page/TicketManagement";
@@ -60,7 +63,6 @@ function TicketManageModal() {
   const pathUrl = usePathUrl();
   const [formValue, setFormValue] = useState(formSubmit);
   const [initialString, setInitialString] = useState("");
-  console.log(location);
 
   useEffect(() => {
     setInitialString(pathUrl?.toString() || "");
@@ -71,9 +73,20 @@ function TicketManageModal() {
       handlerRemovePath(location.pathname) ===
       handlerRemovePath(routesConfig.ticketManagement)
     ) {
-      dispatch(filterPackage({ ...formFilter }));
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchValue = urlParams.get("search");
+      if (searchValue) {
+        dispatch(
+          searchPackageManage({
+            packageName: handlerPackages(initialString, tickets) || "",
+            ticketNumber: searchValue,
+          })
+        );
+      } else {
+        dispatch(filterPackage({ ...formFilter }));
+      }
     }
-  }, [dispatch, formFilter, location.pathname]);
+  }, [dispatch, formFilter, location.pathname, initialString]);
 
   const showModal = () => {
     setVisible(true);

@@ -1,0 +1,16 @@
+.active {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute !important;
+    width: calc(100% + 20px);
+    height: 4px;
+    background: linear-gradient(90deg, #faa05f 0%, #faa05f 100%);
+
+    left: -10px;
+    bottom: -8px;
+    border-radius: 10px;
+    transition: 0.3s ease-in;
+  }
+}

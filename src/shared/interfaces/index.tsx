@@ -8,7 +8,7 @@ export interface DataManageMent {
   ngaySuDung: string;
   ngayXuatVe: string;
   congCheckIn: string;
-  actions: any;
+  actions: string;
 }
 
 export interface DataCheck {
@@ -22,10 +22,15 @@ export interface DataCheck {
   doiSoat: string;
 }
 
-export interface FiltersDataCheckType {
-  packageName: string;
-  startDate?: string;
-  endDate?: string;
-  statusCheck?: string[];
-  gates?: string[];
+export interface DataPackage {
+  key: string;
+  stt: number;
+  maGoi: string;
+  tenGoiVe: string;
+  ngayApDung: string;
+  ngayHetHan: string;
+  giaVe: string;
+  combo: string;
+  tinhTrang: string;
+  actions: string;
 }

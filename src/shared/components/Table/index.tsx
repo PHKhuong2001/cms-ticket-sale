@@ -1,6 +1,6 @@
 import { Table, Pagination } from "antd";
 import { useEffect, useState } from "react";
-import { DataCheck, DataManageMent } from "~/shared/interfaces";
+import { DataCheck, DataManageMent, DataPackage } from "~/shared/interfaces";
 import {
   columnsOffCheckFamily,
   columnsOffCheckEvent,
@@ -9,11 +9,12 @@ import {
   columnsOffManageEvent,
   columnsOffManageFamily,
 } from "~/view/page/TicketManagement/DataManagement";
+import columnsOffPackage from "~/view/page/TicketPackage/DataPackageColumn";
 
 const pageSizeOptions = ["5", "6", "7", "8", "10", "20"]; // Các tùy chọn số lượng hàng trên mỗi trang
 interface TableProps {
   ticketType?: string;
-  data: DataManageMent[] | DataCheck[];
+  data: DataManageMent[] | DataCheck[] | DataPackage[];
   packageName?: string;
 }
 
@@ -53,6 +54,8 @@ const TableComponent = ({ ticketType, data, packageName }: TableProps) => {
         return packageName === "event"
           ? columnsOffManageEvent
           : columnsOffManageFamily;
+      case "packageList":
+        return columnsOffPackage;
     }
   };
 

@@ -1,5 +1,6 @@
 import { DataManageMent } from "~/shared/interfaces";
 import { Tag } from "antd";
+import TicketChangeDateModal from "~/shared/components/Modal/TicketChangeDateModal";
 
 export const dataManage: DataManageMent[] = [];
 
@@ -30,7 +31,18 @@ export const columnsOffManageFamily = [
   { title: "Ngày sử dụng", dataIndex: "ngaySuDung", key: "ngaySuDung" },
   { title: "Ngày xuất vé", dataIndex: "ngayXuatVe", key: "ngayXuatVe" },
   { title: "Cổng check-in", dataIndex: "congCheckIn", key: "congCheckIn" },
-  { title: "", dataIndex: "actions", key: "actions" },
+  {
+    title: "",
+    dataIndex: "actions",
+    key: "actions",
+    render: (text: string) => {
+      if (text === "Chưa sử dụng") {
+        return <TicketChangeDateModal />;
+      } else {
+        return <></>;
+      }
+    },
+  },
 ];
 
 export const columnsOffManageEvent = [
@@ -42,5 +54,16 @@ export const columnsOffManageEvent = [
   { title: "Ngày sử dụng", dataIndex: "ngaySuDung", key: "ngaySuDung" },
   { title: "Ngày xuất vé", dataIndex: "ngayXuatVe", key: "ngayXuatVe" },
   { title: "Cổng check-in", dataIndex: "congCheckIn", key: "congCheckIn" },
-  { title: "", dataIndex: "actions", key: "actions" },
+  {
+    title: "",
+    dataIndex: "actions",
+    key: "actions",
+    render: (text: string) => {
+      if (text === "Chưa sử dụng") {
+        return <TicketChangeDateModal />;
+      } else {
+        return <></>;
+      }
+    },
+  },
 ];

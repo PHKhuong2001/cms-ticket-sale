@@ -1,10 +1,12 @@
 import { useParams } from "react-router-dom";
-import { DataCheck, DataManageMent } from "~/shared/interfaces";
+import { DataCheck, DataManageMent, DataPackage } from "~/shared/interfaces";
 import routesConfig from "./routes";
 
 export const collectionNameTickets = "tickets";
-export const collectionNamePackages = "tickets";
+export const collectionNamePackages = "packages";
 export const dataList: DataManageMent[] | DataCheck[] = [];
+export const dataPackageList: DataPackage[] = [];
+
 export const filtersDataCheckObject = {
   packageName: "",
   startDate: "",

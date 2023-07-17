@@ -12,7 +12,10 @@ import { CalendarOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useAppDispatch } from "~/app/hooks";
 import { handlerPackages } from "~/shared/helpers";
-import { filterPackageCheck } from "~/features/ticket/ticketSlice";
+import {
+  filterPackageCheck,
+  searchPackageCheck,
+} from "~/features/ticket/ticketSlice";
 import { tickets } from "../../TicketManagement";
 import { useLocation, useNavigate } from "react-router-dom";
 import usePathUrlParamsCheck from "~/shared/hooks/usePathUrlParamsCheck";
@@ -55,11 +58,20 @@ function FilterTicketCheck() {
       handlerRemovePath(location.pathname) ===
       handlerRemovePath(routesConfig.ticketCheck)
     ) {
-      dispatch(filterPackageCheck({ ...formFilter })).then((e) => {
-        console.log(e);
-      });
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchValue = urlParams.get("search");
+      if (searchValue) {
+        dispatch(
+          searchPackageCheck({
+            packageName: handlerPackages(initialString, tickets) || "",
+            ticketNumber: searchValue,
+          })
+        );
+      } else {
+        dispatch(filterPackageCheck({ ...formFilter }));
+      }
     }
-  }, [dispatch, formFilter, location.pathname]);
+  }, [dispatch, formFilter, location.pathname, initialString]);
 
   const handlerCheckBox = (value: string) => {
     const isCheckboxChecked = checkedRadio.includes(value);

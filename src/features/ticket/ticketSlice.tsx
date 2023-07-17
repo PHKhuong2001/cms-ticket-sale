@@ -10,52 +10,25 @@ import {
 } from "firebase/firestore";
 import moment from "moment";
 import {
+  collectionNamePackages,
   collectionNameTickets,
   dataList,
+  dataPackageList,
   filtersDataCheckObject,
 } from "~/config";
 import database from "~/config/firebaseConfig";
 import { changeTime } from "~/shared/helpers";
-import {
-  DataCheck,
-  DataManageMent,
-  FiltersDataCheckType,
-} from "~/shared/interfaces";
+import { DataCheck, DataManageMent, DataPackage } from "~/shared/interfaces";
 
 export interface DataManagementState {
   data: DataManageMent[] | DataCheck[];
-  filtersDataCheck: FiltersDataCheckType;
+  dataPackage: DataPackage[];
 }
 
 const initialState: DataManagementState = {
   data: dataList,
-  filtersDataCheck: filtersDataCheckObject,
+  dataPackage: dataPackageList,
 };
-
-// export const getAllPackageManage = createAsyncThunk(
-//   "ticket/getAllPackageManage",
-//   async (packageName: string) => {
-//     const queryApi = query(
-//       collection(database, collectionNameTickets),
-//       where("package", "==", packageName)
-//     );
-
-//     const response = await getDocs(queryApi);
-//     const data = response.docs.map<DataManageMent>((doc, index) => ({
-//       key: `${index + 1}`,
-//       stt: index + 1,
-//       bookingCode: doc.id,
-//       soVe: doc.data().ticketNumber,
-//       tenSuKien: doc.data().nameEvent,
-//       trangThai: doc.data().status,
-//       ngaySuDung: changeTime(doc.data().dateUse.seconds),
-//       ngayXuatVe: changeTime(doc.data().dateRelease.seconds),
-//       congCheckIn: doc.data().gate,
-//       actions: ":",
-//     }));
-//     return data;
-//   }
-// );
 
 export const searchPackageManage = createAsyncThunk(
   "ticket/searchPackageManage",
@@ -64,7 +37,7 @@ export const searchPackageManage = createAsyncThunk(
     ticketNumber,
   }: {
     packageName: string;
-    ticketNumber: string | null;
+    ticketNumber: string;
   }) => {
     let queryApi: Query<DocumentData> = collection(
       database,
@@ -93,30 +66,68 @@ export const searchPackageManage = createAsyncThunk(
   }
 );
 
-// export const getAllPackageCheck = createAsyncThunk(
-//   "ticket/getAllPackageCheck",
-//   async (packageName: string) => {
-//     const queryApi = query(
-//       collection(database, collectionNameTickets),
-//       where("package", "==", packageName)
-//     );
+export const getAllPackage = createAsyncThunk(
+  "ticket/getAllPackage",
+  async (_) => {
+    const response = await getDocs(
+      collection(database, collectionNamePackages)
+    );
+    const options = { style: "currency", currency: "VND" };
+    const data = response.docs.map<DataPackage>((doc, index) => ({
+      key: `${index + 1}`,
+      stt: index + 1,
+      maGoi: "string",
+      tenGoiVe: doc.data().package,
+      ngayApDung: changeTime(doc.data().dateApplicable.seconds),
+      ngayHetHan: changeTime(doc.data().dateExpiration.seconds),
+      giaVe: parseInt(doc.data().fare)
+        .toLocaleString("vi-VN", options)
+        .replace("₫", "VNĐ"),
+      combo: doc.data().comboPrice
+        ? `${parseInt(doc.data().comboPrice)
+            .toLocaleString("vi-VN", options)
+            .replace("₫", "VNĐ")}/${doc.data().comboTickets} Vé`
+        : "-",
+      tinhTrang: doc.data().status,
+      actions: "String",
+    }));
+    return data;
+  }
+);
 
-//     const response = await getDocs(queryApi);
-//     const data = response.docs.map<DataCheck>((doc, index) => ({
-//       key: `${index + 1}`,
-//       stt: index + 1,
-//       soVe: doc.data().ticketNumber,
-//       tenSuKien: doc.data().nameEvent,
-//       ngaySuDung: changeTime(doc.data().dateUse.seconds),
-//       loaiVe: doc.data().typeTicket,
-//       congCheckIn: doc.data().gate,
-//       doiSoat: doc.data().check,
-//     }));
-//     console.log(data);
-
-//     return data;
-//   }
-// );
+export const searchPackageCheck = createAsyncThunk(
+  "ticket/searchPackageCheck",
+  async ({
+    packageName,
+    ticketNumber,
+  }: {
+    packageName: string;
+    ticketNumber: string;
+  }) => {
+    let queryApi: Query<DocumentData> = collection(
+      database,
+      collectionNameTickets
+    );
+    if (packageName) {
+      queryApi = query(queryApi, where("package", "==", packageName));
+    }
+    if (ticketNumber) {
+      queryApi = query(queryApi, where("ticketNumber", "==", ticketNumber));
+    }
+    const response = await getDocs(queryApi);
+    const data = response.docs.map<DataCheck>((doc, index) => ({
+      key: `${index + 1}`,
+      stt: index + 1,
+      soVe: doc.data().ticketNumber,
+      tenSuKien: doc.data().nameEvent,
+      loaiVe: doc.data().typeTicket,
+      ngaySuDung: changeTime(doc.data().dateUse.seconds),
+      congCheckIn: doc.data().gate,
+      doiSoat: doc.data().check,
+    }));
+    return data;
+  }
+);
 
 export const filterPackage = createAsyncThunk(
   "ticket/filterPackage",
@@ -178,7 +189,7 @@ export const filterPackage = createAsyncThunk(
       ngaySuDung: changeTime(doc.data().dateUse.seconds),
       ngayXuatVe: changeTime(doc.data().dateRelease.seconds),
       congCheckIn: doc.data().gate,
-      actions: ":",
+      actions: doc.data().status,
     }));
     return data;
   }
@@ -252,16 +263,19 @@ const ticketSlice = createSlice({
   reducers: {},
   extraReducers: (build) => {
     build
-      // .addCase(getAllPackageManage.fulfilled, (state, action) => {
-      //   state.data = [...action.payload];
-      // })
-      // .addCase(getAllPackageCheck.fulfilled, (state, action) => {
-      //   state.data = [...action.payload];
-      // })
+      .addCase(getAllPackage.fulfilled, (state, action) => {
+        state.dataPackage = [...action.payload];
+      })
+      .addCase(searchPackageManage.fulfilled, (state, action) => {
+        state.data = [...action.payload];
+      })
       .addCase(filterPackage.fulfilled, (state, action) => {
         state.data = [...action.payload];
       })
       .addCase(filterPackageCheck.fulfilled, (state, action) => {
+        state.data = [...action.payload];
+      })
+      .addCase(searchPackageCheck.fulfilled, (state, action) => {
         state.data = [...action.payload];
       });
   },
