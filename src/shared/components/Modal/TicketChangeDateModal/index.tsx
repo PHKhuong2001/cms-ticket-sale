@@ -1,74 +1,54 @@
-import {
-  Button,
-  Checkbox,
-  Col,
-  DatePicker,
-  Form,
-  Modal,
-  Radio,
-  Row,
-  Typography,
-} from "antd";
-import { useEffect, useState } from "react";
-import { ActionIcon, FilterIcon } from "../../Icons";
+import { Button, Col, DatePicker, Form, Modal, Row, Typography } from "antd";
+import { ActionIcon } from "../../Icons";
 import { CalendarOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
 import { useAppDispatch } from "~/app/hooks";
 import {
-  filterPackage,
-  searchPackageManage,
+  getTicketByNumber,
+  updateDateByTicketNumber,
 } from "~/features/ticket/ticketSlice";
-import { useLocation, useNavigate } from "react-router-dom";
+import { usePathUrl } from "~/config";
 import { handlerPackages } from "~/shared/helpers";
 import { tickets } from "~/view/page/TicketManagement";
-import { handlerRemovePath, usePathUrl } from "~/config";
-import usePathUrlParamsManage from "~/shared/hooks/usePathUrlParamsManage";
-import routesConfig from "~/config/routes";
+import { useSelector } from "react-redux";
+import { RootState } from "~/app/store";
+import dayjs from "dayjs";
+import moment from "moment";
 
-const radioList = [
-  { name: "Tất cả" },
-  { name: "Đã sử dụng" },
-  { name: "Chưa sử dụng" },
-  { name: "Hết hạn" },
-];
-
-const checkboxList = [
-  { name: "Tất cả" },
-  { name: "Cổng 1" },
-  { name: "Cổng 2" },
-  { name: "Cổng 3" },
-  { name: "Cổng 4" },
-  { name: "Cổng 5" },
-];
-
-const formSubmit = {
-  packageName: "",
-  startDate: "",
-  endDate: "",
-  status: [],
-  gates: [],
-};
-function TicketChangeDateModal() {
+type Dayjs = import("dayjs").Dayjs;
+interface PropsChangeDateModal {
+  ticketNumber: string;
+}
+function TicketChangeDateModal({ ticketNumber }: PropsChangeDateModal) {
+  const ticket = useSelector((state: RootState) => state.ticket.ticketUpdate);
   const { Title } = Typography;
-  const dispatch = useAppDispatch();
-  const formFilter = usePathUrlParamsManage();
-  const [visible, setVisible] = useState(false);
-  const location = useLocation();
-  const [checkedBox, setCheckedBox] = useState<string[]>(
-    formFilter.gates || []
+  const [dateValue, setDateValue] = useState<Dayjs | null | undefined>(
+    ticket.hanSudung
+      ? dayjs(moment(ticket.hanSudung, "DD/MM/YYYY").format("YYYY-MM-DD"))
+      : undefined
   );
-  const [checkedRadio, setCheckedRadio] = useState<string[]>(
-    formFilter.status || []
-  );
-  const navigate = useNavigate();
-  const pathUrl = usePathUrl();
-  const [formValue, setFormValue] = useState(formSubmit);
-  const [initialString, setInitialString] = useState("");
 
   useEffect(() => {
-    setInitialString(pathUrl?.toString() || "");
-  }, [pathUrl]);
+    setDateValue(
+      ticket.hanSudung
+        ? dayjs(moment(ticket.hanSudung, "DD/MM/YYYY").format("YYYY-MM-DD"))
+        : undefined
+    );
+  }, [ticket.hanSudung]);
+
+  const currentTime = moment().format("hh:mm:ss");
+
+  const dispatch = useAppDispatch();
+  const [visible, setVisible] = useState(false);
+  const pathUrl = usePathUrl();
 
   const showModal = () => {
+    dispatch(
+      getTicketByNumber({
+        packageName: handlerPackages(pathUrl || "", tickets),
+        ticketNumber: ticketNumber,
+      })
+    );
     setVisible(true);
   };
 
@@ -81,30 +61,19 @@ function TicketChangeDateModal() {
   };
 
   const handlerSubmitFilter = () => {
-    const queryParams = new URLSearchParams();
-    const { startDate, endDate, gates } = formValue;
-
     // Thêm các query parameters vào URLSearchParams
-    queryParams.set(
-      "packageName",
-      handlerPackages(initialString, tickets) || "Gói gia đình"
-    );
-    if (startDate) {
-      queryParams.set("startDate", startDate);
-    }
-    if (endDate) {
-      queryParams.set("endDate", endDate);
-    }
-    if (checkedRadio && checkedRadio.length > 0) {
-      queryParams.set("status", checkedRadio.join(","));
-    }
-    if (gates && gates.length > 0) {
-      queryParams.set("gates", gates.join(","));
-    }
-
-    const newPathURL = `/ticket-management/${pathUrl}/?${queryParams.toString()}`;
-    navigate(newPathURL);
-
+    dispatch(
+      updateDateByTicketNumber({
+        ticketNumber: ticket?.soVe,
+        newExpiration: `${dateValue?.format("DD/MM/YYYY")} ${currentTime} `,
+      })
+    )
+      .then((e) => {
+        console.log(e);
+      })
+      .catch((e) => {
+        console.log("Eror: ", e);
+      });
     return false;
   };
 
@@ -119,7 +88,7 @@ function TicketChangeDateModal() {
           <Title
             style={{ fontSize: 24, margin: "0 0 10px 0", textAlign: "center" }}
           >
-            Lọc vé
+            Đổi ngày sử dụng vé
           </Title>
         }
         open={visible}
@@ -129,7 +98,130 @@ function TicketChangeDateModal() {
         width={530}
         footer={false}
       >
-        <Form onFinish={handlerSubmitFilter}>Modal Change Date</Form>
+        <Form onFinish={handlerSubmitFilter}>
+          <Col span={24}>
+            <Row style={{ margin: "0 0 10px 0" }}>
+              <Col span={6}>
+                <Title
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 400,
+                  }}
+                >
+                  Số vé
+                </Title>
+              </Col>
+              <Col span={18}>
+                <Title
+                  style={{
+                    fontSize: 14,
+
+                    fontWeight: 400,
+                  }}
+                >
+                  {ticket?.soVe}
+                </Title>
+              </Col>
+            </Row>
+            <Row style={{ margin: "0 0 10px 0" }}>
+              <Col span={6}>
+                <Title
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 400,
+                  }}
+                >
+                  Số vé
+                </Title>
+              </Col>
+              <Col span={18}>
+                <Title
+                  style={{
+                    fontSize: 14,
+
+                    fontWeight: 400,
+                  }}
+                >
+                  {`Vé cổng - ${
+                    ticket?.tenSuKien ? "Gói sự kiện" : "Gói gia đình"
+                  }`}
+                </Title>
+              </Col>
+            </Row>
+            <Row style={{ margin: "0 0 10px 0" }}>
+              <Col span={6}>
+                <Title
+                  style={{
+                    fontSize: 14,
+
+                    fontWeight: 400,
+                  }}
+                >
+                  Tên sự kiện
+                </Title>
+              </Col>
+              <Col span={18}>
+                <Title
+                  style={{
+                    fontSize: 14,
+
+                    fontWeight: 400,
+                  }}
+                >
+                  {ticket?.tenSuKien}
+                </Title>
+              </Col>
+            </Row>
+            <Row style={{ margin: "0 0 10px 0" }}>
+              <Col span={6}>
+                <Title
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 400,
+                  }}
+                >
+                  Hạn sử dụng
+                </Title>
+              </Col>
+              <Col span={18}>
+                <DatePicker
+                  suffixIcon={<CalendarOutlined />}
+                  showToday={false}
+                  value={dateValue}
+                  format="DD/MM/YYYY"
+                  style={{ width: "40%" }}
+                  onChange={(date: any, dateString: any) => {
+                    setDateValue(date);
+                  }}
+                />
+              </Col>
+            </Row>
+            <Row style={{ marginTop: "10px" }}>
+              <Col
+                span={24}
+                style={{
+                  gap: "20px",
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                <Button
+                  onClick={() => setVisible(false)}
+                  className="buttonFilterReset"
+                >
+                  Huỷ
+                </Button>
+                <Button
+                  className="buttonReset"
+                  htmlType="submit"
+                  onClick={() => setVisible(false)}
+                >
+                  Lưu
+                </Button>
+              </Col>
+            </Row>
+          </Col>
+        </Form>
       </Modal>
     </div>
   );

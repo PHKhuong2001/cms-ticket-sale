@@ -14,9 +14,7 @@ function TicketPackage() {
   );
   const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(getAllPackage()).then((e) => {
-      console.log(e);
-    });
+    dispatch(getAllPackage());
   }, [dispatch]);
 
   return (

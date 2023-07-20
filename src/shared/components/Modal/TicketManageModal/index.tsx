@@ -142,7 +142,7 @@ function TicketManageModal() {
 
   const handlerSubmitFilter = () => {
     const queryParams = new URLSearchParams();
-    const { startDate, endDate, gates } = formValue;
+    const { startDate, endDate } = formValue;
 
     // Thêm các query parameters vào URLSearchParams
     queryParams.set(
@@ -158,8 +158,8 @@ function TicketManageModal() {
     if (checkedRadio && checkedRadio.length > 0) {
       queryParams.set("status", checkedRadio.join(","));
     }
-    if (gates && gates.length > 0) {
-      queryParams.set("gates", gates.join(","));
+    if (checkedBox && checkedBox.length > 0) {
+      queryParams.set("gates", checkedBox.join(","));
     }
 
     const newPathURL = `/ticket-management/${pathUrl}/?${queryParams.toString()}`;

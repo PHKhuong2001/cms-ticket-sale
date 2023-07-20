@@ -8,6 +8,7 @@ import {
 } from "../../shared/styles/AntdStyles/DefaultLayoutStyles";
 import SideBar from "../components/SideBar";
 import HeaderComponent from "../components/Header";
+import { CopyRightIcon } from "~/shared/components/Icons";
 interface DefaultLayoutProps {
   children: any;
 }
@@ -26,7 +27,17 @@ function DefaultLayout({ children }: DefaultLayoutProps) {
           }}
         >
           <SideBar></SideBar>
-          <h1 style={{ margin: 0 }}>Alta Media</h1>
+          <div
+            style={{ display: "flex", justifyContent: "center", gap: "5px" }}
+          >
+            <span style={{ fontSize: "0.7rem", color: "#1E0D03" }}>
+              Copyright
+            </span>
+            <CopyRightIcon width="0.7rem" height="0.7rem" />
+            <span style={{ fontSize: "0.7rem", color: "#1E0D03" }}>
+              2020 Alta Software
+            </span>
+          </div>
         </div>
       </Sider>
       <Layout style={{ background: "transparent" }}>

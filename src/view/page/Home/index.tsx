@@ -49,7 +49,7 @@ function Home() {
             <DatePicker
               suffixIcon={<CalendarOutlined />}
               showToday={false}
-              format="YYYY-MM-DD"
+              format="DD/MM/YYYY"
             />
           </Col>
           <Col
@@ -69,7 +69,7 @@ function Home() {
             >
               Gói gia đình
             </Title>
-            <PieChartComponent></PieChartComponent>
+            <PieChartComponent />
           </Col>
           <Col
             span={6}
@@ -88,7 +88,7 @@ function Home() {
             >
               Gói sự kiện
             </Title>
-            <PieChartComponent></PieChartComponent>
+            <PieChartComponent />
           </Col>
           <Col span={6} style={{ marginTop: "40px" }}>
             <div className="wrapper-use">

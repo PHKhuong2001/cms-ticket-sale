@@ -49,8 +49,6 @@ const SideBar: React.FunctionComponent = () => {
           </Col>
         </Row>
         {listSideBar.map((item, index) => {
-          console.log(handlerRemovePath(currentPath) === item.path);
-
           return (
             <Row style={{}} key={index}>
               <Col span={24}>

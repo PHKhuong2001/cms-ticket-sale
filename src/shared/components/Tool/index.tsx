@@ -1,6 +1,6 @@
 import { Button, Col } from "antd";
 import InputComponent from "../Input";
-import { TicketManageModal, TicketPackageModal } from "../Modal";
+import { TicketManageModal, ModalPackage } from "../Modal";
 import { headerStyles } from "~/shared/styles/AntdStyles/HeaderStyles";
 import { useNavigate } from "react-router-dom";
 import { usePathUrl } from "~/config";
@@ -39,7 +39,7 @@ function Tool({ ticketManage, ticketCheck, ticketPackage }: ToolType) {
           >
             xuất file(.csv)
           </Button>
-          <TicketPackageModal></TicketPackageModal>
+          <ModalPackage update={false} />
         </div>
       );
     }
@@ -52,7 +52,7 @@ function Tool({ ticketManage, ticketCheck, ticketPackage }: ToolType) {
           height: "100%",
         }}
       >
-        <TicketManageModal></TicketManageModal>
+        <TicketManageModal />
         <Button
           style={{ borderColor: "#FF993C" }}
           className="buttonFilterReset"

@@ -12,14 +12,16 @@ export const columnsOffManageFamily = [
     title: "Tình trạng sử dụng",
     dataIndex: "trangThai",
     key: "trangThai",
-    render: (text: any) => {
+    render: (text: string) => {
       let colorTag = "";
-      if (text === "Đã sử dụng") {
-        colorTag = "geekblue";
-      } else if (text === "Chưa sử dụng") {
-        colorTag = "green";
-      } else if (text === "Hết hạn") {
-        colorTag = "volcano";
+      if (text) {
+        if (text === "Đã sử dụng") {
+          colorTag = "geekblue";
+        } else if (text === "Chưa sử dụng") {
+          colorTag = "green";
+        } else if (text === "Hết hạn") {
+          colorTag = "volcano";
+        }
       }
       return (
         <Tag color={colorTag} className="custom-span">
@@ -35,13 +37,13 @@ export const columnsOffManageFamily = [
     title: "",
     dataIndex: "actions",
     key: "actions",
-    render: (text: string) => {
-      if (text === "Chưa sử dụng") {
-        return <TicketChangeDateModal />;
-      } else {
-        return <></>;
-      }
-    },
+    // render: (text: { text: string; ticketNumber: string }) => {
+    //   if (text?.text.includes("Chưa sử dụng") && text?.text.includes("event")) {
+    //     return <TicketChangeDateModal ticketNumber={text?.ticketNumber} />;
+    //   } else {
+    //     return <></>;
+    //   }
+    // },
   },
 ];
 
@@ -52,15 +54,16 @@ export const columnsOffManageEvent = [
   { title: "Tên sự kiện", dataIndex: "tenSuKien", key: "tenSuKien" },
   { title: "Tình trạng sử dụng", dataIndex: "trangThai", key: "trangThai" },
   { title: "Ngày sử dụng", dataIndex: "ngaySuDung", key: "ngaySuDung" },
-  { title: "Ngày xuất vé", dataIndex: "ngayXuatVe", key: "ngayXuatVe" },
+  // { title: "Ngày xuất vé", dataIndex: "ngayXuatVe", key: "ngayXuatVe" },
+  { title: "Hạn sử dụng", dataIndex: "hanSudung", key: "hanSudung" },
   { title: "Cổng check-in", dataIndex: "congCheckIn", key: "congCheckIn" },
   {
     title: "",
     dataIndex: "actions",
     key: "actions",
-    render: (text: string) => {
-      if (text === "Chưa sử dụng") {
-        return <TicketChangeDateModal />;
+    render: (text: { text: string; ticketNumber: string }) => {
+      if (text?.text.includes("Chưa sử dụng") && text?.text.includes("event")) {
+        return <TicketChangeDateModal ticketNumber={text.ticketNumber} />;
       } else {
         return <></>;
       }

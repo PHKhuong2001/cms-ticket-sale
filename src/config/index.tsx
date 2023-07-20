@@ -6,6 +6,34 @@ export const collectionNameTickets = "tickets";
 export const collectionNamePackages = "packages";
 export const dataList: DataManageMent[] | DataCheck[] = [];
 export const dataPackageList: DataPackage[] = [];
+export const getByNumberTicket: DataManageMent = {
+  key: `${0}`,
+  stt: 0,
+  bookingCode: "",
+  soVe: "",
+  tenSuKien: "",
+  trangThai: "",
+  ngaySuDung: "",
+  ngayXuatVe: "",
+  congCheckIn: "",
+  actions: {
+    text: "",
+    ticketNumber: "",
+  },
+};
+
+export const getDataPackage: DataPackage = {
+  key: "",
+  stt: 0,
+  maGoi: "",
+  tenGoiVe: "",
+  ngayApDung: "",
+  ngayHetHan: "",
+  giaVe: "",
+  combo: "",
+  tinhTrang: "",
+  actions: "",
+};
 
 export const filtersDataCheckObject = {
   packageName: "",
@@ -38,4 +66,12 @@ export const handlerRemovePath = (path: string) => {
     const extractedPath = `/${pathSegments[1]}`;
     return extractedPath;
   }
+};
+
+export const takeTimeAndDate = (dateAndTime: string) => {
+  const cutting = dateAndTime.split(" ");
+  return {
+    date: cutting,
+    time: "",
+  };
 };

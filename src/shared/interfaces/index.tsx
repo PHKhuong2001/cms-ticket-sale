@@ -6,9 +6,13 @@ export interface DataManageMent {
   tenSuKien?: string;
   trangThai: any;
   ngaySuDung: string;
-  ngayXuatVe: string;
+  ngayXuatVe?: string;
+  hanSudung?: string;
   congCheckIn: string;
-  actions: string;
+  actions: {
+    text: string;
+    ticketNumber: string;
+  };
 }
 
 export interface DataCheck {

@@ -1,41 +1,46 @@
 import { useEffect, useState } from "react";
 import { Chart as Chartjs, PointElement } from "chart.js/auto";
-import { Pie } from "react-chartjs-2";
+import { Doughnut } from "react-chartjs-2";
 
 Chartjs.register(PointElement);
 
-interface dataSets {
-  label: string;
-  data: number[];
-  hoverOffset: number;
-}
-interface typeChart<T> {
-  datasets: T[];
-}
-const chartData = {
+interface ChartData {
   datasets: [
     {
-      label: "",
-      data: [],
-      hoverOffset: 0,
-    },
-  ],
-};
+      label: string;
+      data: number[];
+      hoverOffset: number;
+      backgroundColor?: string[];
+    }
+  ];
+}
 function PieChartComponent() {
-  const [chartDemo, setChart] = useState<typeChart<dataSets>>(chartData);
+  const [chartDemo, setChart] = useState<ChartData>({
+    datasets: [
+      {
+        label: "My First Dataset",
+        data: [300, 100],
+        hoverOffset: 4,
+        backgroundColor: ["#FF6384", "#36A2EB"], // Màu cho hai data
+      },
+    ],
+  });
+
   useEffect(() => {
-    setChart({
+    setChart((prevChart: ChartData) => ({
+      ...prevChart,
       datasets: [
         {
-          label: "My First Dataset",
-          data: [300, 100],
-          hoverOffset: 4,
+          ...prevChart.datasets[0],
+          backgroundColor: ["#4F75FF", "#FF8A48"],
         },
       ],
-    });
+    }));
   }, []);
 
-  return <Pie data={chartDemo} width={100} height={100} className="pieChart" />;
+  return (
+    <Doughnut data={chartDemo} width={100} height={100} className="pieChart" />
+  );
 }
 
 export default PieChartComponent;
