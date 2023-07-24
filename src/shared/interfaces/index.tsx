@@ -38,3 +38,11 @@ export interface DataPackage {
   tinhTrang: string;
   actions: string;
 }
+
+export interface ChartType {
+  weekNumber?: number;
+  startDate?: string;
+  endDate?: string;
+  fareMoney: number;
+  date?: string;
+}

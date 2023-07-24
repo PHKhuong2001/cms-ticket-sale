@@ -30,14 +30,26 @@ import {
   convertMoneyToVND,
   convertToTimestamp,
   generateCustomId,
+  getStartAndEndOfWeekInMonth,
+  getWeekDates,
+  splitDate,
+  splitDateFare,
 } from "~/shared/helpers";
-import { DataCheck, DataManageMent, DataPackage } from "~/shared/interfaces";
+import {
+  ChartType,
+  DataCheck,
+  DataManageMent,
+  DataPackage,
+} from "~/shared/interfaces";
 
 export interface DataState {
   data: DataManageMent[] | DataCheck[];
   dataPackage: DataPackage[];
   ticketUpdate: DataManageMent;
   packageUpdate: DataPackage;
+  dataPackageFamily: string[];
+  dataPackageEvenet: string[];
+  dataChart: ChartType[];
 }
 
 const initialState: DataState = {
@@ -45,6 +57,9 @@ const initialState: DataState = {
   dataPackage: dataPackageList,
   ticketUpdate: getByNumberTicket,
   packageUpdate: getDataPackage,
+  dataPackageFamily: [],
+  dataPackageEvenet: [],
+  dataChart: [],
 };
 
 export const searchPackageManage = createAsyncThunk(
@@ -230,8 +245,6 @@ export const filterPackageCheck = createAsyncThunk(
     );
 
     if (startDate && endDate) {
-      console.log("Time True");
-
       const startTimestamp = Timestamp.fromMillis(
         moment(startDate, "DD/MM/YYYY").startOf("day").valueOf()
       );
@@ -392,6 +405,67 @@ export const getPackageById = createAsyncThunk(
   }
 );
 
+export const getAllTicketsByPackageNameAndMonth = createAsyncThunk(
+  "tickets/getAllTicketsByPackageNameAndMonth",
+  async ({
+    packageName,
+    dateString,
+  }: {
+    packageName: string;
+    dateString: string;
+  }) => {
+    // Chuyển đổi chuỗi thành giá trị ngày, tháng và năm
+    const { month, year } = splitDate(dateString);
+
+    // Tạo timestamp từ ngày, tháng và năm
+    const startDate = Timestamp.fromDate(new Date(year, month - 1, 1));
+    const endDate = Timestamp.fromDate(new Date(year, month, 0));
+
+    // Query theo trường "package" và trường timestamp
+    const querySnapshot = await getDocs(
+      query(
+        collection(database, collectionNameTickets),
+        where("package", "==", packageName),
+        where("dateUse", ">=", startDate),
+        where("dateUse", "<=", endDate)
+      )
+    );
+
+    const allTickets = querySnapshot.docs.map((doc) => doc.data().status);
+    return allTickets;
+  }
+);
+export const getAllTicketsByPackageNameEvent = createAsyncThunk(
+  "tickets/getAllTicketsByPackageNameEvent",
+  async ({
+    packageName,
+    dateString,
+  }: {
+    packageName: string;
+    dateString: string;
+  }) => {
+    // Chuyển đổi chuỗi thành giá trị ngày, tháng và năm
+    const { month, year } = splitDate(dateString);
+
+    // Tạo timestamp từ ngày, tháng và năm
+    const startDate = Timestamp.fromDate(new Date(year, month - 1, 1));
+    const endDate = Timestamp.fromDate(new Date(year, month, 0));
+
+    // Query theo trường "package" và trường timestamp
+    const querySnapshot = await getDocs(
+      query(
+        collection(database, collectionNameTickets),
+        where("package", "==", packageName),
+        where("dateUse", ">=", startDate),
+        where("dateUse", "<=", endDate)
+      )
+    );
+
+    const allTickets = querySnapshot.docs.map((doc) => doc.data().status);
+    return allTickets;
+  }
+);
+
 export const updateDateByTicketNumber = createAsyncThunk(
   "tickets/updateDateApplicableByTicketNumber",
   async ({
@@ -418,6 +492,156 @@ export const updateDateByTicketNumber = createAsyncThunk(
   }
 );
 
+export const updateStatusToSettled = createAsyncThunk(
+  "tickets/updateStatusToSettled",
+  async ({
+    ticketNumbers,
+    dataList,
+  }: {
+    ticketNumbers: string[];
+    dataList: DataManageMent[] | DataCheck[];
+  }) => {
+    let queryApi: Query<DocumentData> = collection(
+      database,
+      collectionNameTickets
+    );
+
+    if (ticketNumbers && ticketNumbers.length > 0) {
+      // Nếu có danh sách ticketNumbers, thêm điều kiện where vào câu truy vấn
+      queryApi = query(queryApi, where("ticketNumber", "in", ticketNumbers));
+    }
+
+    // Lấy dữ liệu dựa trên câu truy vấn
+    const querySnapshot = await getDocs(queryApi);
+    const ticketsToUpdate = querySnapshot.docs.map((doc: any) => {
+      return { key: doc.id, ...doc.data() };
+    }) as DataManageMent[];
+
+    if (ticketsToUpdate.length > 0) {
+      const updatePromises = ticketsToUpdate.map(
+        async (ticket: DataManageMent) => {
+          const ticketDocRef = doc(
+            database,
+            `${collectionNameTickets}/${ticket.key}`
+          );
+          await updateDoc(ticketDocRef, {
+            check: "Đã đối soát",
+          });
+        }
+      );
+
+      await Promise.all(updatePromises);
+
+      // Trả về danh sách mới sau khi cập nhật thành công
+      // return dataList.map<DataManageMent | DataCheck>(
+      //   (ticket: DataManageMent) =>
+      //     ticketNumbers.includes(ticket.soVe)
+      //       ? { ...ticket, doiSoat: "Đã đối soát" }
+      //       : ticket
+      // );
+    } else {
+      throw new Error("Không tìm thấy vé để cập nhật");
+    }
+  }
+);
+
+export const getAllTotalFareChart = createAsyncThunk(
+  "tickets/getAllTotalFareChart",
+  async ({ dateString }: { dateString: string }) => {
+    const { month, year } = splitDate(dateString);
+
+    const weeksInMonth = getStartAndEndOfWeekInMonth(year, month);
+
+    const allTickets: {
+      weekNumber: number;
+      startDate: string;
+      endDate: string;
+      fareMoney: number;
+    }[] = [];
+    for (let i = 0; i < weeksInMonth.length; i++) {
+      const week = weeksInMonth[i];
+      const querySnapshot = await getDocs(
+        query(
+          collection(database, collectionNameTickets),
+          where("dateRelease", ">=", Timestamp.fromDate(week.start)),
+          where("dateRelease", "<=", Timestamp.fromDate(week.end))
+        )
+      );
+
+      const ticketsInWeek = querySnapshot.docs.map((doc) => {
+        return {
+          date: changeDate(doc.data().dateRelease.seconds),
+          fareMoney: doc.data().fare,
+        };
+      });
+
+      // Tính tổng tiền của tuần
+      const totalFareMoney = ticketsInWeek.reduce(
+        (sum, ticket) => sum + parseFloat(ticket.fareMoney),
+        0
+      );
+
+      // Thêm vào danh sách
+      allTickets.push({
+        weekNumber: i + 1,
+        startDate: changeDate(week.start.getTime() / 1000), // Thêm thông tin ngày đầu tuần
+        endDate: changeDate(week.end.getTime() / 1000), // Thêm thông tin ngày cuối tuần
+        fareMoney: totalFareMoney, // Giữ nguyên giá trị fareMoney đã tính tổng từ firebase
+      });
+    }
+
+    return allTickets;
+  }
+);
+
+export const getWeeklyData = createAsyncThunk(
+  "tickets/getWeeklyData",
+  async ({ dateString }: { dateString: string }) => {
+    const { day, month, year } = splitDateFare(dateString);
+
+    const weekDates = getWeekDates(year, month, day);
+
+    const allTickets: ChartType[] = [];
+
+    for (const date of weekDates) {
+      const querySnapshot = await getDocs(
+        query(
+          collection(database, collectionNameTickets),
+          where(
+            "dateRelease",
+            ">=",
+            Timestamp.fromDate(moment(date, "DD/MM/YYYY").toDate())
+          ),
+          where(
+            "dateRelease",
+            "<",
+            Timestamp.fromDate(
+              moment(date, "DD/MM/YYYY").add(1, "days").toDate()
+            )
+          )
+        )
+      );
+
+      const ticketsInDate = querySnapshot.docs.map((doc) => {
+        return {
+          dates: moment(doc.data().dateRelease.toDate()).format("DD/MM/YYYY"),
+          fareMoney: parseFloat(doc.data().fare), // Parse fareMoney thành số (float)
+        };
+      });
+
+      // Tính tổng tiền của ngày
+      const totalFareMoney = ticketsInDate.reduce(
+        (sum, ticket) => sum + ticket.fareMoney,
+        0
+      );
+
+      // Thêm vào danh sách
+      allTickets.push({ date, fareMoney: totalFareMoney });
+    }
+
+    return allTickets;
+  }
+);
 const ticketSlice = createSlice({
   name: "ticket",
   initialState,
@@ -445,15 +669,21 @@ const ticketSlice = createSlice({
         });
 
         state.dataPackage = newDataPackage;
-        console.log(state.dataPackage);
       })
       .addCase(addPackageFireBase.rejected, (state, action) => {
         console.log(action.error.message);
       })
       .addCase(getTicketByNumber.fulfilled, (state, action) => {
-        console.log(action.payload);
-
         state.ticketUpdate = { ...action.payload };
+      })
+      .addCase(
+        getAllTicketsByPackageNameAndMonth.fulfilled,
+        (state, action) => {
+          state.dataPackageFamily = [...action.payload];
+        }
+      )
+      .addCase(getAllTicketsByPackageNameEvent.fulfilled, (state, action) => {
+        state.dataPackageEvenet = [...action.payload];
       })
       .addCase(updateDateByTicketNumber.fulfilled, (state, action) => {
         state.ticketUpdate = {
@@ -471,6 +701,12 @@ const ticketSlice = createSlice({
             ticketNumber: "",
           },
         };
+      })
+      .addCase(getAllTotalFareChart.fulfilled, (state, action) => {
+        state.dataChart = [...action.payload];
+      })
+      .addCase(getWeeklyData.fulfilled, (state, action) => {
+        state.dataChart = [...action.payload];
       });
   },
 });

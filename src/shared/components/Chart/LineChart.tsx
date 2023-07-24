@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
-
-interface DataMonth {
-  dateUse: string;
-  dateRelease: string;
-  amount: string;
-}
+import { getDayOfWeek, splitMonthAndDay } from "~/shared/helpers";
+import { ChartType } from "~/shared/interfaces";
 
 interface DataSets {
   label: string;
@@ -23,42 +19,44 @@ interface ChartData {
   datasets: DataSets[];
 }
 
-const dataList: DataMonth[] = [
-  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "140.0" },
-  { dateUse: "13/07/2023", dateRelease: "12/07/2023", amount: "260.0" },
-  { dateUse: "13/07/2023", dateRelease: "12/07/2023", amount: "186.0" },
-  { dateUse: "13/07/2023", dateRelease: "12/07/2023", amount: "260.0" },
-  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "190.0" },
-  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "178.0" },
-  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "150.0" },
-  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "170.0" },
-  { dateUse: "12/07/2023", dateRelease: "12/07/2023", amount: "260.0" },
-];
+const chart = {
+  labels: [],
+  datasets: [
+    {
+      label: "",
+      data: [],
+      tension: 0.5,
+      borderColor: "",
+      pointBorderColor: "",
+      backgroundColor: {} as CanvasGradient,
+      fill: true,
+      spanGaps: true,
+    },
+  ],
+};
+interface LineChartProps {
+  dataChart: ChartType[];
+}
 
-function LineChartComponent() {
-  const [chartData, setChartData] = useState<ChartData>({
-    labels: [],
-    datasets: [
-      {
-        label: "",
-        data: [],
-        tension: 0.5,
-        borderColor: "",
-        pointBorderColor: "",
-        backgroundColor: {} as CanvasGradient,
-        fill: true,
-        spanGaps: true,
-      },
-    ],
-  });
-
+const LineChartComponent = ({ dataChart }: LineChartProps) => {
+  const [chartData, setChartData] = useState<ChartData>(chart);
   useEffect(() => {
     setChartData({
-      labels: dataList.map((month) => month.dateUse),
+      labels: dataChart.map((date) => {
+        if (date.endDate) {
+          return `${splitMonthAndDay(
+            date.startDate || ""
+          )} - ${splitMonthAndDay(date.endDate || "")}`;
+        } else {
+          return `${getDayOfWeek(date.date || "")} - ${splitMonthAndDay(
+            date.date || ""
+          )}`;
+        }
+      }),
       datasets: [
         {
           label: "",
-          data: dataList.map((month) => month.amount),
+          data: dataChart.map((fare) => fare.fareMoney.toString()),
           tension: 0.5,
           borderColor: "#FF993C",
           pointBorderColor: "transparent",
@@ -68,7 +66,7 @@ function LineChartComponent() {
         },
       ],
     });
-  }, []);
+  }, [dataChart]);
 
   const createLinearGradient = () => {
     const ctx = document.createElement("canvas").getContext("2d");
@@ -85,7 +83,7 @@ function LineChartComponent() {
     scales: {
       y: {
         ticks: {
-          stepSize: 40,
+          stepSize: 100000,
         },
       },
       x: {
@@ -105,6 +103,6 @@ function LineChartComponent() {
   };
 
   return <Line width={400} data={chartData} height={80} options={options} />;
-}
+};
 
 export default LineChartComponent;

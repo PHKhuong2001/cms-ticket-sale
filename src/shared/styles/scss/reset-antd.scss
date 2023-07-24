@@ -1,5 +1,5 @@
 @mixin ticketsUseAndUnuse($marginBottom: 10px) {
-  padding-left: 50px;
+  padding-left: 60px;
   margin-bottom: $marginBottom;
 }
 .layout-default {
@@ -50,7 +50,10 @@
   > td {
   padding: 8px 8px;
 }
-
+:where(.css-dev-only-do-not-override-14wwjjs).ant-picker .ant-picker-suffix {
+  color: #ff993c !important;
+  cursor: pointer;
+}
 .odd-row {
   background-color: #f7f8fb;
 }
@@ -71,8 +74,32 @@
 }
 
 .wrapper-use {
-  @include ticketsUseAndUnuse($marginBottom: 10px);
+  @include ticketsUseAndUnuse($marginBottom: 20px);
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 44px;
+    background-color: #4f75ff;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 4px;
+  }
 }
 .wrapper-unuse {
   @include ticketsUseAndUnuse($marginBottom: 0);
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 44px;
+    background-color: #ff8a48;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 4px;
+  }
 }

@@ -4,6 +4,7 @@ import { TicketManageModal, ModalPackage } from "../Modal";
 import { headerStyles } from "~/shared/styles/AntdStyles/HeaderStyles";
 import { useNavigate } from "react-router-dom";
 import { usePathUrl } from "~/config";
+import ButtonCheck from "./TicketCheck";
 interface ToolType {
   ticketManage?: boolean;
   ticketCheck?: boolean;
@@ -22,7 +23,7 @@ function Tool({ ticketManage, ticketCheck, ticketPackage }: ToolType) {
 
   const renderTool = () => {
     if (ticketCheck) {
-      return <Button className="buttonReset">Chốt đối soát</Button>;
+      return <ButtonCheck />;
     } else if (ticketPackage) {
       return (
         <div

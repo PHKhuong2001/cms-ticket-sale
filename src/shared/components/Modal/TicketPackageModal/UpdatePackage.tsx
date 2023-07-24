@@ -9,13 +9,15 @@ import {
   Typography,
   Select,
 } from "antd";
-import { FieldTimeOutlined, CalendarOutlined } from "@ant-design/icons";
+import {
+  FieldTimeOutlined,
+  CalendarOutlined,
+  EditFilled,
+} from "@ant-design/icons";
 
 import { ChangeEvent, useState } from "react";
 import { useAppDispatch } from "~/app/hooks";
 import { getPackageById } from "~/features/ticket/ticketSlice";
-import moment from "moment";
-type Dayjs = import("dayjs").Dayjs;
 
 function TicketPackageModal({ idPackage }: { idPackage: string }) {
   const { Title } = Typography;
@@ -43,8 +45,17 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
 
   return (
     <div>
-      <Button onClick={showModal} className="buttonReset">
-        Cập nhật
+      <Button
+        onClick={showModal}
+        style={{
+          cursor: "pointer",
+          border: "none",
+          color: "#ff993c",
+          boxShadow: "none",
+          backgroundColor: "transparent",
+        }}
+      >
+        <EditFilled /> cập nhật
       </Button>
       <Modal
         title={

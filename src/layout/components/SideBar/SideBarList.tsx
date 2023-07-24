@@ -6,7 +6,7 @@ import {
 } from "~/shared/components/Icons";
 import routesConfig from "~/config/routes";
 import { SideBarList } from "./index";
-
+import { SettingOutlined } from "@ant-design/icons";
 const listSideBar: SideBarList[] = [
   {
     icon: <HomeIcon width="24" height="24" />,

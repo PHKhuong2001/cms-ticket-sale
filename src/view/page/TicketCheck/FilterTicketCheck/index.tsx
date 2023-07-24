@@ -21,6 +21,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import usePathUrlParamsCheck from "~/shared/hooks/usePathUrlParamsCheck";
 import { handlerRemovePath, usePathUrl } from "~/config";
 import routesConfig from "~/config/routes";
+import { useSelector } from "react-redux";
+import { RootState } from "~/app/store";
 
 export const radioList = [
   { name: "Tất cả" },
@@ -38,12 +40,20 @@ const formSubmit = {
 function FilterTicketCheck() {
   const { Option } = Select;
   const { Title } = Typography;
+  const list = useSelector((state: RootState) => state.ticket.data);
   const dispatch = useAppDispatch();
   const pathUrl = usePathUrl();
   const location = useLocation();
   const navigate = useNavigate();
   const [formValue, setFormValue] = useState(formSubmit);
   const formFilter = usePathUrlParamsCheck();
+  const uniqueArray: string[] = [];
+  list.forEach((item) => {
+    if (!uniqueArray.includes(item.tenSuKien || "")) {
+      uniqueArray.push(item.tenSuKien || "");
+    }
+  });
+
   const [checkedRadio, setCheckedRadio] = useState<string[]>(
     formFilter.statusCheck || []
   );
@@ -51,8 +61,6 @@ function FilterTicketCheck() {
   useEffect(() => {
     setInitialString(pathUrl?.toString() || "");
   }, [pathUrl]);
-  console.log(formFilter);
-
   useEffect(() => {
     if (
       handlerRemovePath(location.pathname) ===
@@ -141,10 +149,14 @@ function FilterTicketCheck() {
         {initialString === "event" ? (
           <Row style={{ marginBottom: "24px", marginTop: "20px" }}>
             <Col span={24}>
-              <Select style={{ width: "100%" }}>
-                <Option value="option1">Option 1</Option>
-                <Option value="option2">Option 2</Option>
-                <Option value="option3">Option 3</Option>
+              <Select style={{ width: "100%" }} placeholder={uniqueArray[0]}>
+                {uniqueArray.map((item, index) => {
+                  return (
+                    <Option key={index} value={item}>
+                      {item}
+                    </Option>
+                  );
+                })}
               </Select>
             </Col>
           </Row>
