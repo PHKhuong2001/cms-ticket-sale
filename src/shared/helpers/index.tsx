@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase/firestore";
 import moment from "moment";
 import { Packages } from "~/view/page/TicketManagement";
+import dayjs, { Dayjs } from "dayjs";
 
 export const handlerPackages = (name: string, packages: Packages[]) => {
   const findPackage = packages.find((item) => item.filterTicket === name);
@@ -135,6 +136,11 @@ export const splitMonthAndDay = (date: String) => {
   return `${day}/${month}`;
 };
 
+export const slitString = (date: String) => {
+  const [first, second] = date.split(" ").map(Number);
+  return { first, second };
+};
+
 export const getWeekDates = (year: number, month: number, day: number) => {
   const currentDate = moment(new Date(year, month - 1, day)); // month trong JavaScript là 0-indexed, nên trừ 1
   const startOfWeekDate = currentDate.startOf("isoWeek"); // Tuần bắt đầu từ thứ 2 (monday)
@@ -170,4 +176,22 @@ export const getDayOfWeek = (dateString: string) => {
   const dayName = weekdays[dayOfWeek];
 
   return dayName; // Hoặc trả về dayOfWeek nếu bạn muốn lấy giá trị số thứ tự thay vì tên thứ
+};
+
+const isValidDateString = (dateString: string): boolean => {
+  return typeof dateString === "string" && dateString.trim().length > 0;
+};
+export const parseTimeToTimePickerValue = (
+  timeString: string
+): Dayjs | null => {
+  if (!isValidDateString(timeString)) {
+    return null;
+  }
+
+  const [hours, minutes, seconds] = timeString.split(":");
+  let currentDate = dayjs();
+  currentDate = currentDate.set("hour", Number(hours));
+  currentDate = currentDate.set("minute", Number(minutes));
+  currentDate = currentDate.set("second", Number(seconds));
+  return currentDate.isValid() ? currentDate : null;
 };

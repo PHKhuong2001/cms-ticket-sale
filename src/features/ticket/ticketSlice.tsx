@@ -326,16 +326,64 @@ export const addPackageFireBase = createAsyncThunk(
       dateApplicable: convertToTimestamp(newApplicable),
       dateExpiration: convertToTimestamp(newExpiration),
     });
+
+    const response = await getDocs(
+      collection(database, collectionNamePackages)
+    );
+    const data = response.docs.map<DataPackage>((doc, index) => {
+      return {
+        key: `${index + 1}`,
+        stt: index + 1,
+        maGoi: doc.id,
+        tenGoiVe: doc.data().package,
+        ngayApDung: doc.data().dateApplicable.seconds,
+        ngayHetHan: doc.data().dateExpiration.seconds,
+        giaVe: convertMoneyToVND(doc.data().fare),
+        combo: doc.data().comboPrice
+          ? `${convertMoneyToVND(doc.data().comboPrice)}/${
+              doc.data().comboTickets
+            } Vé`
+          : "-",
+        tinhTrang: doc.data().status,
+        actions: doc.id,
+      };
+    });
+    return data;
   }
 );
 
+export const updatePackageFireBase = createAsyncThunk(
+  "tickets/updatePackageFireBase",
+  async (packageObject: DataPackage) => {
+    const querySnapshot = await getDocs(
+      collection(database, collectionNamePackages)
+    );
+    const packageDoc = querySnapshot.docs.find(
+      (doc) => doc.id === packageObject.maGoi
+    );
+
+    if (packageDoc) {
+      await updateDoc(packageDoc.ref, {
+        // comboPrice: packageObject.combo,
+        // comboTickets: packageObject.key,
+        // dateApplicable: "",
+        // dateExpiration: convertToTimestamp(packageObject.ngayApDung),
+        fare: packageObject.giaVe,
+        package: packageObject.tenGoiVe,
+        status: packageObject.tinhTrang,
+      });
+    } else {
+      throw new Error("Gói vé không tồn tại");
+    }
+  }
+);
 export const getTicketByNumber = createAsyncThunk(
   "tickets/getTicketByNumber",
   async ({
-    packageName,
+    // packageName,
     ticketNumber,
   }: {
-    packageName: string;
+    // packageName: string;
     ticketNumber: string;
   }) => {
     let queryApi: Query<DocumentData> = collection(
@@ -345,10 +393,6 @@ export const getTicketByNumber = createAsyncThunk(
 
     if (ticketNumber) {
       queryApi = query(queryApi, where("ticketNumber", "==", ticketNumber));
-    }
-
-    if (packageName) {
-      queryApi = query(queryApi, where("package", "==", packageName));
     }
 
     const querySnapshot = await getDocs(query(queryApi, limit(1)));
@@ -363,7 +407,7 @@ export const getTicketByNumber = createAsyncThunk(
       trangThai: doc.data().status,
       ngaySuDung: changeDate(doc.data().dateUse.seconds),
       ngayXuatVe: changeDate(doc.data().dateRelease.seconds),
-      hanSudung: changeDate(doc.data().dateExpiration.seconds),
+      hanSudung: changeDate(doc.data().dateExpiration?.seconds),
       congCheckIn: doc.data().gate,
       actions: {
         text: doc.data().status,
@@ -390,11 +434,11 @@ export const getPackageById = createAsyncThunk(
         ngayApDung: `${changeDate(data.dateApplicable.seconds)} ${changeTime(
           data.dateApplicable.seconds
         )}`,
-        ngayHetHan: data.dateExpiration.seconds,
-        giaVe: convertMoneyToVND(data.fare),
-        combo: data.comboPrice
-          ? `${convertMoneyToVND(data.comboPrice)}/${data.comboTickets} Vé`
-          : "-",
+        ngayHetHan: `${changeDate(data.dateExpiration.seconds)} ${changeTime(
+          data.dateExpiration.seconds
+        )}`,
+        giaVe: data.fare,
+        combo: `${data.comboPrice} ${data.comboTickets}`,
         tinhTrang: data.status,
         actions: data.id,
       };
@@ -466,7 +510,7 @@ export const getAllTicketsByPackageNameEvent = createAsyncThunk(
   }
 );
 
-export const updateDateByTicketNumber = createAsyncThunk(
+export const updateDateExpirationByTicketNumber = createAsyncThunk(
   "tickets/updateDateApplicableByTicketNumber",
   async ({
     ticketNumber,
@@ -485,6 +529,32 @@ export const updateDateByTicketNumber = createAsyncThunk(
     if (packageDoc) {
       await updateDoc(packageDoc.ref, {
         dateExpiration: convertToTimestamp(newExpiration),
+      });
+    } else {
+      throw new Error("Gói vé không tồn tại");
+    }
+  }
+);
+
+export const updateDateUseByTicketNumber = createAsyncThunk(
+  "tickets/updateDateUseByTicketNumber",
+  async ({
+    ticketNumber,
+    newUse,
+  }: {
+    ticketNumber: string;
+    newUse: string;
+  }) => {
+    const querySnapshot = await getDocs(
+      collection(database, collectionNameTickets)
+    );
+    const packageDoc = querySnapshot.docs.find(
+      (doc) => doc.data().ticketNumber === ticketNumber
+    );
+
+    if (packageDoc) {
+      await updateDoc(packageDoc.ref, {
+        dateUse: convertToTimestamp(newUse),
       });
     } else {
       throw new Error("Gói vé không tồn tại");
@@ -531,14 +601,6 @@ export const updateStatusToSettled = createAsyncThunk(
       );
 
       await Promise.all(updatePromises);
-
-      // Trả về danh sách mới sau khi cập nhật thành công
-      // return dataList.map<DataManageMent | DataCheck>(
-      //   (ticket: DataManageMent) =>
-      //     ticketNumbers.includes(ticket.soVe)
-      //       ? { ...ticket, doiSoat: "Đã đối soát" }
-      //       : ticket
-      // );
     } else {
       throw new Error("Không tìm thấy vé để cập nhật");
     }
@@ -663,18 +725,17 @@ const ticketSlice = createSlice({
       .addCase(searchPackageCheck.fulfilled, (state, action) => {
         state.data = [...action.payload];
       })
-      .addCase(addPackageFireBase.fulfilled, (state) => {
-        const newDataPackage = state.dataPackage.map((item) => {
-          return item;
-        });
-
-        state.dataPackage = newDataPackage;
+      .addCase(addPackageFireBase.fulfilled, (state, action) => {
+        state.dataPackage = action.payload;
       })
       .addCase(addPackageFireBase.rejected, (state, action) => {
         console.log(action.error.message);
       })
       .addCase(getTicketByNumber.fulfilled, (state, action) => {
         state.ticketUpdate = { ...action.payload };
+      })
+      .addCase(getTicketByNumber.rejected, (state, action) => {
+        console.log(action.error);
       })
       .addCase(
         getAllTicketsByPackageNameAndMonth.fulfilled,
@@ -685,7 +746,27 @@ const ticketSlice = createSlice({
       .addCase(getAllTicketsByPackageNameEvent.fulfilled, (state, action) => {
         state.dataPackageEvenet = [...action.payload];
       })
-      .addCase(updateDateByTicketNumber.fulfilled, (state, action) => {
+      .addCase(
+        updateDateExpirationByTicketNumber.fulfilled,
+        (state, action) => {
+          state.ticketUpdate = {
+            key: ``,
+            stt: 0,
+            bookingCode: "",
+            soVe: "",
+            tenSuKien: "",
+            trangThai: "",
+            ngaySuDung: "",
+            ngayXuatVe: "",
+            congCheckIn: "",
+            actions: {
+              text: "",
+              ticketNumber: "",
+            },
+          };
+        }
+      )
+      .addCase(updateDateUseByTicketNumber.fulfilled, (state, action) => {
         state.ticketUpdate = {
           key: ``,
           stt: 0,
@@ -701,6 +782,23 @@ const ticketSlice = createSlice({
             ticketNumber: "",
           },
         };
+      })
+      .addCase(updatePackageFireBase.fulfilled, (state, action) => {
+        state.packageUpdate = {
+          key: "",
+          stt: 0,
+          maGoi: "",
+          tenGoiVe: "",
+          ngayApDung: "",
+          ngayHetHan: "",
+          giaVe: "",
+          combo: "",
+          tinhTrang: "",
+          actions: "",
+        };
+      })
+      .addCase(getPackageById.fulfilled, (state, action) => {
+        state.packageUpdate = { ...action.payload };
       })
       .addCase(getAllTotalFareChart.fulfilled, (state, action) => {
         state.dataChart = [...action.payload];

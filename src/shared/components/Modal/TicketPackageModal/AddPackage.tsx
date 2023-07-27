@@ -41,6 +41,7 @@ function TicketPackageModal() {
   const [visible, setVisible] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const [formData, setFormData] = useState<FormCreate>(formAdd);
+  const [checkedBox, setCheckedBox] = useState<string[]>([]);
   const [dateAndTimeApplicable, setdateAndTimeApplicable] = useState({
     date: "",
     time: "",
@@ -65,11 +66,25 @@ function TicketPackageModal() {
   };
 
   const handleOk = () => {
+    setCheckedBox([]);
     setVisible(false);
   };
 
   const handleCancel = () => {
+    setCheckedBox([]);
     setVisible(false);
+  };
+  const handlerCheckBox = (value: string) => {
+    const isCheckboxChecked = checkedBox.includes(value);
+    let checkboxList = [];
+    setCheckedBox((prev) => {
+      if (isCheckboxChecked) {
+        checkboxList = checkedBox.filter((item) => item !== value);
+      } else {
+        checkboxList = [...prev, value];
+      }
+      return checkboxList;
+    });
   };
 
   const handlerSubmitFormAdd = () => {
@@ -226,12 +241,15 @@ function TicketPackageModal() {
                   <Col span={24}>
                     <Checkbox
                       style={{ lineHeight: "32px", borderColor: "#27AEF9" }}
+                      checked={checkedBox.includes("vé lẻ")}
+                      onClick={() => handlerCheckBox("vé lẻ")}
                     >
                       Vé lẻ (vnđ/vé) với giá
                     </Checkbox>
                     <Input
                       placeholder=""
                       onChange={handlerTicketFareChange}
+                      disabled={!checkedBox.includes("vé lẻ")}
                       style={{
                         width: "20%",
                         border: "none",
@@ -245,12 +263,15 @@ function TicketPackageModal() {
                 <Row>
                   <Col span={24}>
                     <Checkbox
+                      checked={checkedBox.includes("combo")}
+                      onClick={() => handlerCheckBox("combo")}
                       style={{ lineHeight: "32px", borderColor: "#27AEF9" }}
                     >
                       Combo vé với giá
                     </Checkbox>
                     <Input
                       placeholder=""
+                      disabled={!checkedBox.includes("combo")}
                       onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -273,6 +294,7 @@ function TicketPackageModal() {
                     </span>
                     <Input
                       placeholder=""
+                      disabled={!checkedBox.includes("combo")}
                       onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -335,10 +357,7 @@ function TicketPackageModal() {
                   justifyContent: "center",
                 }}
               >
-                <Button
-                  onClick={() => setVisible(false)}
-                  className="buttonFilterReset"
-                >
+                <Button onClick={handleCancel} className="buttonFilterReset">
                   Huỷ
                 </Button>
                 <Button

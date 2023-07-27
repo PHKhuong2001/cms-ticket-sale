@@ -8,27 +8,72 @@ import {
   Row,
   Typography,
   Select,
+  TimePicker,
 } from "antd";
 import {
   FieldTimeOutlined,
   CalendarOutlined,
   EditFilled,
 } from "@ant-design/icons";
-
-import { ChangeEvent, useState } from "react";
+import dayjs from "dayjs";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useAppDispatch } from "~/app/hooks";
-import { getPackageById } from "~/features/ticket/ticketSlice";
+import {
+  getPackageById,
+  updatePackageFireBase,
+} from "~/features/ticket/ticketSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "~/app/store";
+import { parseTimeToTimePickerValue, slitString } from "~/shared/helpers";
+import moment from "moment";
+import { DataPackage } from "~/shared/interfaces";
 
 function TicketPackageModal({ idPackage }: { idPackage: string }) {
   const { Title } = Typography;
   const [visible, setVisible] = useState(false);
-
   const dispatch = useAppDispatch();
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
+  const [checkedBox, setCheckedBox] = useState<string[]>([]);
+  const [combo, setCombo] = useState<string>("");
+  const [comboTicket, setComboTickets] = useState<string>("");
+  const packageObject = useSelector(
+    (state: RootState) => state.ticket.packageUpdate
+  );
+  const [formUpdate, setFormUpdatePackage] = useState<DataPackage>({
+    key: "",
+    stt: 0,
+    maGoi: "",
+    tenGoiVe: "",
+    ngayApDung: "",
+    ngayHetHan: "",
+    giaVe: "",
+    combo: "",
+    tinhTrang: "",
+    actions: "",
+  });
+  const [inputNamePackage, setInputNamePackage] = useState("");
+  useEffect(() => {
+    setFormUpdatePackage(packageObject);
+    setInputNamePackage(packageObject.tenGoiVe);
+  }, [packageObject]);
+
+  const handlerCheckBox = (value: string) => {
+    const isCheckboxChecked = checkedBox.includes(value);
+    let checkboxList = [];
+    setCheckedBox((prev) => {
+      if (isCheckboxChecked) {
+        checkboxList = checkedBox.filter((item) => item !== value);
+      } else {
+        checkboxList = [...prev, value];
+      }
+      return checkboxList;
+    });
   };
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setFormUpdatePackage((prev) => ({ ...prev, tenGoiVe: event.target.value }));
+  };
+
   const handleChangeSelectStatus = (value: string) => {
-    console.log(`selected ${value}`);
+    setFormUpdatePackage((prev) => ({ ...prev, tinhTrang: value }));
   };
   const showModal = () => {
     dispatch(getPackageById(idPackage));
@@ -36,6 +81,7 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
   };
 
   const handleOk = () => {
+    dispatch(updatePackageFireBase({ ...formUpdate }));
     setVisible(false);
   };
 
@@ -79,7 +125,7 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
         {/* Nội dung của Modal */}
         <Col>
           <Row style={{ marginBottom: 15 }}>
-            <Col span={24}>
+            <Col span={12}>
               <Title
                 style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 500 }}
               >
@@ -89,6 +135,19 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                 placeholder="Nhập tên gói vé"
                 onChange={handleInputChange}
                 style={{ width: "70%" }}
+                value={inputNamePackage}
+              />
+            </Col>
+            <Col span={12}>
+              <Title
+                style={{ fontSize: 16, margin: "0 0 5px 0", fontWeight: 500 }}
+              >
+                Tên sự kiện
+              </Title>
+              <Input
+                placeholder="Nhập tên gói vé"
+                onChange={handleInputChange}
+                style={{ width: "100%" }}
               />
             </Col>
           </Row>
@@ -110,15 +169,23 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                     suffixIcon={<CalendarOutlined />}
                     style={{ width: "90%" }}
                     placeholder="dd/mm/yyyy"
+                    value={dayjs(
+                      moment(
+                        formUpdate.ngayApDung.split(" ")[0],
+                        "DD/MM/YYYY"
+                      ).format("YYYY-MM-DD")
+                    )}
                   />
                 </Col>
                 <Col span={10}>
-                  <DatePicker
+                  <TimePicker
                     format="hh:mm:ss"
                     suffixIcon={<FieldTimeOutlined />}
-                    showTime={false}
                     style={{ width: "90%" }}
                     placeholder="hh:mm:ss"
+                    value={parseTimeToTimePickerValue(
+                      formUpdate.ngayApDung.split(" ")[1]
+                    )}
                   />
                 </Col>
               </Row>
@@ -138,6 +205,12 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                     suffixIcon={<CalendarOutlined />}
                     style={{ width: "90%" }}
                     placeholder="dd/mm/yyyy"
+                    value={dayjs(
+                      moment(
+                        formUpdate.ngayHetHan.split(" ")[0],
+                        "DD/MM/YYYY"
+                      ).format("YYYY-MM-DD")
+                    )}
                   />
                 </Col>
                 <Col span={10}>
@@ -147,6 +220,9 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                     showTime={false}
                     style={{ width: "90%" }}
                     placeholder="hh:mm:ss"
+                    value={parseTimeToTimePickerValue(
+                      formUpdate.ngayHetHan.split(" ")[1]
+                    )}
                   />
                 </Col>
               </Row>
@@ -165,12 +241,21 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                 <Col span={24}>
                   <Checkbox
                     style={{ lineHeight: "32px", borderColor: "#27AEF9" }}
+                    checked={checkedBox.includes("vé lẻ")}
+                    onClick={() => handlerCheckBox("vé lẻ")}
                   >
                     Vé lẻ (vnđ/vé) với giá
                   </Checkbox>
                   <Input
                     placeholder=""
-                    onChange={handleInputChange}
+                    onChange={(e) =>
+                      setFormUpdatePackage((prev) => ({
+                        ...prev,
+                        giaVe: e.target.value,
+                      }))
+                    }
+                    value={formUpdate.giaVe}
+                    disabled={!checkedBox.includes("vé lẻ")}
                     style={{
                       width: "20%",
                       border: "none",
@@ -190,7 +275,13 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                   </Checkbox>
                   <Input
                     placeholder=""
-                    onChange={handleInputChange}
+                    value={slitString(formUpdate.combo).first || ""}
+                    onChange={(e) =>
+                      setFormUpdatePackage((prev) => ({
+                        ...prev,
+                        combo: e.target.value,
+                      }))
+                    }
                     style={{
                       width: "20%",
                       border: "none",
@@ -207,7 +298,13 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                   </span>
                   <Input
                     placeholder=""
-                    onChange={handleInputChange}
+                    onChange={(e) =>
+                      setFormUpdatePackage((prev) => ({
+                        ...prev,
+                        key: e.target.value,
+                      }))
+                    }
+                    value={slitString(formUpdate.combo).second || ""}
                     style={{
                       width: "10%",
                       border: "none",
@@ -231,6 +328,7 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
               </Title>
               <Select
                 defaultValue="Đang áp dụng"
+                value={formUpdate.tinhTrang}
                 style={{ width: 150 }}
                 onChange={handleChangeSelectStatus}
                 options={[
@@ -260,13 +358,10 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
               span={24}
               style={{ gap: "20px", display: "flex", justifyContent: "center" }}
             >
-              <Button
-                onClick={() => setVisible(false)}
-                className="buttonFilterReset"
-              >
+              <Button onClick={handleCancel} className="buttonFilterReset">
                 Huỷ
               </Button>
-              <Button onClick={() => setVisible(false)} className="buttonReset">
+              <Button onClick={handleOk} className="buttonReset">
                 Lưu
               </Button>
             </Col>

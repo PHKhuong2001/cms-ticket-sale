@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useAppDispatch } from "~/app/hooks";
 import {
   getTicketByNumber,
-  updateDateByTicketNumber,
+  updateDateExpirationByTicketNumber,
+  updateDateUseByTicketNumber,
 } from "~/features/ticket/ticketSlice";
 import { usePathUrl } from "~/config";
 import { handlerPackages } from "~/shared/helpers";
@@ -22,30 +23,31 @@ interface PropsChangeDateModal {
 function TicketChangeDateModal({ ticketNumber }: PropsChangeDateModal) {
   const ticket = useSelector((state: RootState) => state.ticket.ticketUpdate);
   const { Title } = Typography;
+  const currentTime = moment().format("hh:mm:ss");
+  const dispatch = useAppDispatch();
+  const [visible, setVisible] = useState(false);
   const [dateValue, setDateValue] = useState<Dayjs | null | undefined>(
     ticket.hanSudung
       ? dayjs(moment(ticket.hanSudung, "DD/MM/YYYY").format("YYYY-MM-DD"))
       : undefined
   );
-
+  const [dateValueUse, setDateValueUse] = useState<Dayjs | null | undefined>(
+    ticket.ngaySuDung
+      ? dayjs(moment(ticket.ngaySuDung, "DD/MM/YYYY").format("YYYY-MM-DD"))
+      : undefined
+  );
   useEffect(() => {
-    setDateValue(
-      ticket.hanSudung
-        ? dayjs(moment(ticket.hanSudung, "DD/MM/YYYY").format("YYYY-MM-DD"))
+    setDateValueUse(
+      ticket.ngaySuDung
+        ? dayjs(moment(ticket.ngaySuDung, "DD/MM/YYYY").format("YYYY-MM-DD"))
         : undefined
     );
-  }, [ticket.hanSudung]);
-
-  const currentTime = moment().format("hh:mm:ss");
-
-  const dispatch = useAppDispatch();
-  const [visible, setVisible] = useState(false);
-  const pathUrl = usePathUrl();
+  }, [ticket.hanSudung, ticket.ngaySuDung]);
 
   const showModal = () => {
     dispatch(
       getTicketByNumber({
-        packageName: handlerPackages(pathUrl || "", tickets),
+        // packageName: handlerPackages(pathUrl || "", tickets),
         ticketNumber: ticketNumber,
       })
     );
@@ -53,27 +55,40 @@ function TicketChangeDateModal({ ticketNumber }: PropsChangeDateModal) {
   };
 
   const handleOk = () => {
+    dispatch(
+      getTicketByNumber({
+        // packageName: handlerPackages(pathUrl || "", tickets),
+        ticketNumber: "",
+      })
+    );
     setVisible(false);
   };
 
   const handleCancel = () => {
+    dispatch(
+      getTicketByNumber({
+        // packageName: handlerPackages(pathUrl || "", tickets),
+        ticketNumber: "",
+      })
+    );
     setVisible(false);
   };
-
   const handlerSubmitFilter = () => {
-    // Thêm các query parameters vào URLSearchParams
-    dispatch(
-      updateDateByTicketNumber({
-        ticketNumber: ticket?.soVe,
-        newExpiration: `${dateValue?.format("DD/MM/YYYY")} ${currentTime} `,
-      })
-    )
-      .then((e) => {
-        console.log(e);
-      })
-      .catch((e) => {
-        console.log("Eror: ", e);
-      });
+    if (ticket.tenSuKien) {
+      dispatch(
+        updateDateExpirationByTicketNumber({
+          ticketNumber: ticket?.soVe,
+          newExpiration: `${dateValue?.format("DD/MM/YYYY")} ${currentTime} `,
+        })
+      );
+    } else {
+      dispatch(
+        updateDateUseByTicketNumber({
+          ticketNumber: ticket?.soVe,
+          newUse: `${dateValueUse?.format("DD/MM/YYYY")} ${currentTime} `,
+        })
+      );
+    }
     return false;
   };
 
@@ -119,7 +134,7 @@ function TicketChangeDateModal({ ticketNumber }: PropsChangeDateModal) {
                     fontWeight: 400,
                   }}
                 >
-                  {ticket?.soVe}
+                  {ticket.soVe}
                 </Title>
               </Col>
             </Row>
@@ -148,54 +163,85 @@ function TicketChangeDateModal({ ticketNumber }: PropsChangeDateModal) {
                 </Title>
               </Col>
             </Row>
-            <Row style={{ margin: "0 0 10px 0" }}>
-              <Col span={6}>
-                <Title
-                  style={{
-                    fontSize: 14,
+            {ticket.tenSuKien ? (
+              <Row style={{ margin: "0 0 10px 0" }}>
+                <Col span={6}>
+                  <Title
+                    style={{
+                      fontSize: 14,
 
-                    fontWeight: 400,
-                  }}
-                >
-                  Tên sự kiện
-                </Title>
-              </Col>
-              <Col span={18}>
-                <Title
-                  style={{
-                    fontSize: 14,
+                      fontWeight: 400,
+                    }}
+                  >
+                    Tên sự kiện
+                  </Title>
+                </Col>
+                <Col span={18}>
+                  <Title
+                    style={{
+                      fontSize: 14,
 
-                    fontWeight: 400,
-                  }}
-                >
-                  {ticket?.tenSuKien}
-                </Title>
-              </Col>
-            </Row>
-            <Row style={{ margin: "0 0 10px 0" }}>
-              <Col span={6}>
-                <Title
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 400,
-                  }}
-                >
-                  Hạn sử dụng
-                </Title>
-              </Col>
-              <Col span={18}>
-                <DatePicker
-                  suffixIcon={<CalendarOutlined />}
-                  showToday={false}
-                  value={dateValue}
-                  format="DD/MM/YYYY"
-                  style={{ width: "40%" }}
-                  onChange={(date: any, dateString: any) => {
-                    setDateValue(date);
-                  }}
-                />
-              </Col>
-            </Row>
+                      fontWeight: 400,
+                    }}
+                  >
+                    {ticket.tenSuKien}
+                  </Title>
+                </Col>
+              </Row>
+            ) : (
+              <></>
+            )}
+            {ticket.tenSuKien ? (
+              <Row style={{ margin: "0 0 10px 0" }}>
+                <Col span={6}>
+                  <Title
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 400,
+                    }}
+                  >
+                    Hạn sử dụng
+                  </Title>
+                </Col>
+                <Col span={18}>
+                  <DatePicker
+                    suffixIcon={<CalendarOutlined />}
+                    showToday={false}
+                    value={dateValue}
+                    format="DD/MM/YYYY"
+                    style={{ width: "40%" }}
+                    onChange={(date: any, dateString: any) => {
+                      setDateValue(date);
+                    }}
+                  />
+                </Col>
+              </Row>
+            ) : (
+              <Row style={{ margin: "0 0 10px 0" }}>
+                <Col span={6}>
+                  <Title
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 400,
+                    }}
+                  >
+                    Ngày sử dụng
+                  </Title>
+                </Col>
+                <Col span={18}>
+                  <DatePicker
+                    suffixIcon={<CalendarOutlined />}
+                    showToday={false}
+                    value={dateValueUse}
+                    format="DD/MM/YYYY"
+                    style={{ width: "40%" }}
+                    onChange={(date: any, dateString: any) => {
+                      setDateValueUse(date);
+                    }}
+                  />
+                </Col>
+              </Row>
+            )}
             <Row style={{ marginTop: "10px" }}>
               <Col
                 span={24}

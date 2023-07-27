@@ -37,13 +37,13 @@ export const columnsOffManageFamily = [
     title: "",
     dataIndex: "actions",
     key: "actions",
-    // render: (text: { text: string; ticketNumber: string }) => {
-    //   if (text?.text.includes("Chưa sử dụng") && text?.text.includes("event")) {
-    //     return <TicketChangeDateModal ticketNumber={text?.ticketNumber} />;
-    //   } else {
-    //     return <></>;
-    //   }
-    // },
+    render: (text: { text: string; ticketNumber: string }) => {
+      if (text?.text.includes("Chưa sử dụng")) {
+        return <TicketChangeDateModal ticketNumber={text.ticketNumber} />;
+      } else {
+        return <></>;
+      }
+    },
   },
 ];
 
@@ -62,7 +62,7 @@ export const columnsOffManageEvent = [
     dataIndex: "actions",
     key: "actions",
     render: (text: { text: string; ticketNumber: string }) => {
-      if (text?.text.includes("Chưa sử dụng") && text?.text.includes("event")) {
+      if (text?.text.includes("Chưa sử dụng")) {
         return <TicketChangeDateModal ticketNumber={text.ticketNumber} />;
       } else {
         return <></>;
