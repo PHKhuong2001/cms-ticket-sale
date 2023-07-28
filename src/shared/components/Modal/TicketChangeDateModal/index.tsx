@@ -47,7 +47,6 @@ function TicketChangeDateModal({ ticketNumber }: PropsChangeDateModal) {
   const showModal = () => {
     dispatch(
       getTicketByNumber({
-        // packageName: handlerPackages(pathUrl || "", tickets),
         ticketNumber: ticketNumber,
       })
     );

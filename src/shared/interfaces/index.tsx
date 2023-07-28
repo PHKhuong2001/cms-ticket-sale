@@ -35,6 +35,7 @@ export interface DataPackage {
   ngayHetHan: string;
   giaVe: string;
   combo: string;
+  tenSuKien?: string;
   tinhTrang: string;
   actions: string;
 }

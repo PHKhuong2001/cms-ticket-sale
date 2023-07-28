@@ -267,9 +267,9 @@ export const filterPackageCheck = createAsyncThunk(
       queryApi = query(queryApi, where("check", "in", statusCheck));
     }
 
-    // if (gates && gates.length > 0) {
-    //   queryApi = query(queryApi, where("gate", "in", gates));
-    // }
+    if (gates && gates.length > 0) {
+      queryApi = query(queryApi, where("gate", "in", gates));
+    }
 
     const response = await getDocs(queryApi);
     const data = response.docs.map<DataCheck>((doc, index) => ({
@@ -364,17 +364,40 @@ export const updatePackageFireBase = createAsyncThunk(
 
     if (packageDoc) {
       await updateDoc(packageDoc.ref, {
-        // comboPrice: packageObject.combo,
-        // comboTickets: packageObject.key,
-        // dateApplicable: "",
-        // dateExpiration: convertToTimestamp(packageObject.ngayApDung),
+        comboPrice: packageObject.combo,
+        comboTickets: packageObject.key,
+        dateApplicable: convertToTimestamp(packageObject.ngayApDung),
+        dateExpiration: convertToTimestamp(packageObject.ngayHetHan),
         fare: packageObject.giaVe,
-        package: packageObject.tenGoiVe,
+        nameEvent: packageObject.tenSuKien,
         status: packageObject.tinhTrang,
       });
     } else {
       throw new Error("Gói vé không tồn tại");
     }
+
+    const response = await getDocs(
+      collection(database, collectionNamePackages)
+    );
+    const data = response.docs.map<DataPackage>((doc, index) => {
+      return {
+        key: `${index + 1}`,
+        stt: index + 1,
+        maGoi: doc.id,
+        tenGoiVe: doc.data().package,
+        ngayApDung: doc.data().dateApplicable.seconds,
+        ngayHetHan: doc.data().dateExpiration.seconds,
+        giaVe: convertMoneyToVND(doc.data().fare),
+        combo: doc.data().comboPrice
+          ? `${convertMoneyToVND(doc.data().comboPrice)}/${
+              doc.data().comboTickets
+            } Vé`
+          : "-",
+        tinhTrang: doc.data().status,
+        actions: doc.id,
+      };
+    });
+    return data;
   }
 );
 export const getTicketByNumber = createAsyncThunk(
@@ -427,10 +450,11 @@ export const getPackageById = createAsyncThunk(
     if (docSnapshot.exists()) {
       const data = docSnapshot.data();
       const result = {
-        key: `${0}`,
+        key: `${data.comboTickets}`,
         stt: 0,
         maGoi: docSnapshot.id,
         tenGoiVe: data.package,
+        tenSuKien: data.nameEvent,
         ngayApDung: `${changeDate(data.dateApplicable.seconds)} ${changeTime(
           data.dateApplicable.seconds
         )}`,
@@ -438,7 +462,7 @@ export const getPackageById = createAsyncThunk(
           data.dateExpiration.seconds
         )}`,
         giaVe: data.fare,
-        combo: `${data.comboPrice} ${data.comboTickets}`,
+        combo: `${data.comboPrice}`,
         tinhTrang: data.status,
         actions: data.id,
       };
@@ -796,6 +820,7 @@ const ticketSlice = createSlice({
           tinhTrang: "",
           actions: "",
         };
+        state.dataPackage = action.payload;
       })
       .addCase(getPackageById.fulfilled, (state, action) => {
         state.packageUpdate = { ...action.payload };

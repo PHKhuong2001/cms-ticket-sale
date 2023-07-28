@@ -24,7 +24,7 @@ import {
 } from "~/features/ticket/ticketSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "~/app/store";
-import { parseTimeToTimePickerValue, slitString } from "~/shared/helpers";
+import { parseTimeToTimePickerValue } from "~/shared/helpers";
 import moment from "moment";
 import { DataPackage } from "~/shared/interfaces";
 
@@ -33,8 +33,11 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
   const [visible, setVisible] = useState(false);
   const dispatch = useAppDispatch();
   const [checkedBox, setCheckedBox] = useState<string[]>([]);
-  const [combo, setCombo] = useState<string>("");
-  const [comboTicket, setComboTickets] = useState<string>("");
+  const [dateApplicable, setDateApplicable] = useState<string>("");
+  const [dateApplicableTime, setDateApplicableTime] = useState<string>("");
+  const [dateExpiration, setDateExpiration] = useState<string>("");
+  const [dateExpirationTime, setDateExpirationTime] = useState<string>("");
+
   const packageObject = useSelector(
     (state: RootState) => state.ticket.packageUpdate
   );
@@ -47,6 +50,7 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
     ngayHetHan: "",
     giaVe: "",
     combo: "",
+    tenSuKien: "",
     tinhTrang: "",
     actions: "",
   });
@@ -54,7 +58,11 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
   useEffect(() => {
     setFormUpdatePackage(packageObject);
     setInputNamePackage(packageObject.tenGoiVe);
-  }, [packageObject]);
+    setDateApplicable(formUpdate.ngayApDung.split(" ")[0]);
+    setDateApplicableTime(formUpdate.ngayApDung.split(" ")[1]);
+    setDateExpiration(formUpdate.ngayHetHan.split(" ")[0]);
+    setDateExpirationTime(formUpdate.ngayHetHan.split(" ")[1]);
+  }, [packageObject, formUpdate.ngayApDung, formUpdate.ngayHetHan]);
 
   const handlerCheckBox = (value: string) => {
     const isCheckboxChecked = checkedBox.includes(value);
@@ -81,7 +89,13 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
   };
 
   const handleOk = () => {
-    dispatch(updatePackageFireBase({ ...formUpdate }));
+    dispatch(
+      updatePackageFireBase({
+        ...formUpdate,
+        ngayApDung: `${dateApplicable} ${dateApplicableTime}`,
+        ngayHetHan: `${dateExpiration} ${dateExpirationTime}`,
+      })
+    );
     setVisible(false);
   };
 
@@ -132,10 +146,10 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                 Tên gói vé*
               </Title>
               <Input
-                placeholder="Nhập tên gói vé"
                 onChange={handleInputChange}
                 style={{ width: "70%" }}
                 value={inputNamePackage}
+                disabled
               />
             </Col>
             <Col span={12}>
@@ -145,8 +159,13 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                 Tên sự kiện
               </Title>
               <Input
-                placeholder="Nhập tên gói vé"
-                onChange={handleInputChange}
+                value={formUpdate.tenSuKien}
+                onChange={(e) =>
+                  setFormUpdatePackage((prev) => ({
+                    ...prev,
+                    tenSuKien: e.target.value,
+                  }))
+                }
                 style={{ width: "100%" }}
               />
             </Col>
@@ -170,11 +189,13 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                     style={{ width: "90%" }}
                     placeholder="dd/mm/yyyy"
                     value={dayjs(
-                      moment(
-                        formUpdate.ngayApDung.split(" ")[0],
-                        "DD/MM/YYYY"
-                      ).format("YYYY-MM-DD")
+                      moment(dateApplicable, "DD/MM/YYYY").format("YYYY-MM-DD")
                     )}
+                    onChange={(date, dateString) => {
+                      if (dateString) {
+                        setDateApplicable(dateString);
+                      }
+                    }}
                   />
                 </Col>
                 <Col span={10}>
@@ -183,9 +204,10 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                     suffixIcon={<FieldTimeOutlined />}
                     style={{ width: "90%" }}
                     placeholder="hh:mm:ss"
-                    value={parseTimeToTimePickerValue(
-                      formUpdate.ngayApDung.split(" ")[1]
-                    )}
+                    value={parseTimeToTimePickerValue(dateApplicableTime)}
+                    onChange={(date: any, dateString: any) =>
+                      setDateApplicableTime(dateString)
+                    }
                   />
                 </Col>
               </Row>
@@ -204,25 +226,27 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                     format="DD/MM/YYYY"
                     suffixIcon={<CalendarOutlined />}
                     style={{ width: "90%" }}
+                    onChange={(date, datestring) => {
+                      if (datestring) {
+                        setDateExpiration(datestring);
+                      }
+                    }}
                     placeholder="dd/mm/yyyy"
                     value={dayjs(
-                      moment(
-                        formUpdate.ngayHetHan.split(" ")[0],
-                        "DD/MM/YYYY"
-                      ).format("YYYY-MM-DD")
+                      moment(dateExpiration, "DD/MM/YYYY").format("YYYY-MM-DD")
                     )}
                   />
                 </Col>
                 <Col span={10}>
-                  <DatePicker
+                  <TimePicker
                     format="hh:mm:ss"
                     suffixIcon={<FieldTimeOutlined />}
-                    showTime={false}
                     style={{ width: "90%" }}
                     placeholder="hh:mm:ss"
-                    value={parseTimeToTimePickerValue(
-                      formUpdate.ngayHetHan.split(" ")[1]
-                    )}
+                    onChange={(date: any, dateString: any) =>
+                      setDateExpirationTime(dateString)
+                    }
+                    value={parseTimeToTimePickerValue(dateExpirationTime)}
                   />
                 </Col>
               </Row>
@@ -270,12 +294,15 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                 <Col span={24}>
                   <Checkbox
                     style={{ lineHeight: "32px", borderColor: "#27AEF9" }}
+                    checked={checkedBox.includes("combo")}
+                    onClick={() => handlerCheckBox("combo")}
                   >
                     Combo vé với giá
                   </Checkbox>
                   <Input
                     placeholder=""
-                    value={slitString(formUpdate.combo).first || ""}
+                    value={formUpdate.combo}
+                    disabled={!checkedBox.includes("combo")}
                     onChange={(e) =>
                       setFormUpdatePackage((prev) => ({
                         ...prev,
@@ -298,13 +325,14 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
                   </span>
                   <Input
                     placeholder=""
+                    disabled={!checkedBox.includes("combo")}
                     onChange={(e) =>
                       setFormUpdatePackage((prev) => ({
                         ...prev,
                         key: e.target.value,
                       }))
                     }
-                    value={slitString(formUpdate.combo).second || ""}
+                    value={formUpdate.key}
                     style={{
                       width: "10%",
                       border: "none",
