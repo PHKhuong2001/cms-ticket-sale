@@ -8,9 +8,6 @@ import {
   updateDateExpirationByTicketNumber,
   updateDateUseByTicketNumber,
 } from "~/features/ticket/ticketSlice";
-import { usePathUrl } from "~/config";
-import { handlerPackages } from "~/shared/helpers";
-import { tickets } from "~/view/page/TicketManagement";
 import { useSelector } from "react-redux";
 import { RootState } from "~/app/store";
 import dayjs from "dayjs";
@@ -27,22 +24,25 @@ function TicketChangeDateModal({ ticketNumber }: PropsChangeDateModal) {
   const dispatch = useAppDispatch();
   const [visible, setVisible] = useState(false);
   const [dateValue, setDateValue] = useState<Dayjs | null | undefined>(
-    ticket.hanSudung
-      ? dayjs(moment(ticket.hanSudung, "DD/MM/YYYY").format("YYYY-MM-DD"))
-      : undefined
+    undefined
   );
   const [dateValueUse, setDateValueUse] = useState<Dayjs | null | undefined>(
-    ticket.ngaySuDung
-      ? dayjs(moment(ticket.ngaySuDung, "DD/MM/YYYY").format("YYYY-MM-DD"))
-      : undefined
+    undefined
   );
   useEffect(() => {
+    if (ticket.tenSuKien) {
+      setDateValue(
+        ticket.hanSudung
+          ? dayjs(moment(ticket.hanSudung, "DD/MM/YYYY").format("YYYY-MM-DD"))
+          : undefined
+      );
+    }
     setDateValueUse(
       ticket.ngaySuDung
         ? dayjs(moment(ticket.ngaySuDung, "DD/MM/YYYY").format("YYYY-MM-DD"))
         : undefined
     );
-  }, [ticket.hanSudung, ticket.ngaySuDung]);
+  }, [ticket.hanSudung, ticket.ngaySuDung, ticket.tenSuKien]);
 
   const showModal = () => {
     dispatch(

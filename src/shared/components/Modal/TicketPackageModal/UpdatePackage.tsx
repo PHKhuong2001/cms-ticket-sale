@@ -89,13 +89,21 @@ function TicketPackageModal({ idPackage }: { idPackage: string }) {
   };
 
   const handleOk = () => {
+    console.log(formUpdate);
+
     dispatch(
       updatePackageFireBase({
         ...formUpdate,
         ngayApDung: `${dateApplicable} ${dateApplicableTime}`,
         ngayHetHan: `${dateExpiration} ${dateExpirationTime}`,
       })
-    );
+    )
+      .then((e) => {
+        console.log(e);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
     setVisible(false);
   };
 

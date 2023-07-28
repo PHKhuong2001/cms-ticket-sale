@@ -363,15 +363,26 @@ export const updatePackageFireBase = createAsyncThunk(
     );
 
     if (packageDoc) {
-      await updateDoc(packageDoc.ref, {
-        comboPrice: packageObject.combo,
-        comboTickets: packageObject.key,
-        dateApplicable: convertToTimestamp(packageObject.ngayApDung),
-        dateExpiration: convertToTimestamp(packageObject.ngayHetHan),
-        fare: packageObject.giaVe,
-        nameEvent: packageObject.tenSuKien,
-        status: packageObject.tinhTrang,
-      });
+      if (packageObject.tenSuKien) {
+        await updateDoc(packageDoc.ref, {
+          comboPrice: packageObject.combo,
+          comboTickets: packageObject.key,
+          dateApplicable: convertToTimestamp(packageObject.ngayApDung),
+          dateExpiration: convertToTimestamp(packageObject.ngayHetHan),
+          fare: packageObject.giaVe,
+          nameEvent: packageObject.tenSuKien,
+          status: packageObject.tinhTrang,
+        });
+      } else {
+        await updateDoc(packageDoc.ref, {
+          comboPrice: packageObject.combo,
+          comboTickets: packageObject.key,
+          dateApplicable: convertToTimestamp(packageObject.ngayApDung),
+          dateExpiration: convertToTimestamp(packageObject.ngayHetHan),
+          fare: packageObject.giaVe,
+          status: packageObject.tinhTrang,
+        });
+      }
     } else {
       throw new Error("Gói vé không tồn tại");
     }
